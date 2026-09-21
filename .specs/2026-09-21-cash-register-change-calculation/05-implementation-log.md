@@ -68,3 +68,21 @@
 - `dotnet format --verify-no-changes` → 0; Release build → 0 warnings; full suite 34/34 passed.
 - Coverage: Transaction, ChangeLine and MinimalChangeStrategy have 100% line and branch coverage.
 - Status: **done**.
+
+### T-004 — red
+- Tests: `RandomChangeStrategyTests`: sums exactly over 1000 seeds × 0..500¢ (AC-005); ≥2 distinct results across 20 seeds for 167¢ (AC-004); same seed gives the same result; largest first with no zero counts (AC-007); zero → empty; negative throws.
+- Stage 1: compile failure. Stage 2: a stub returning `[]`.
+- Run → 3 failed / 36 passed. The ordering, same-seed and zero tests pass trivially on an empty list; the three core assertions fail, e.g. `distinctResults should be greater than 1 but was 1`.
+
+### T-004 — green
+- `RandomChangeStrategy(Random)`, per ADR-003: for each denomination largest first, take `NextInt64(0, mostThatFit + 1)`; the smallest denomination takes all that fits, so the total is exact.
+- Unit suite 39/39 passed.
+
+### T-004 — refactor
+- Same shape as `MinimalChangeStrategy` (early `continue`, subtract `line.Total`). No structural change needed. Suite green.
+
+### T-004 — simplify
+- Named the local `mostThatFit`, and `smallest` for the remainder rule. The doc comment explains why the total is always exact.
+- Coverage first showed an 87.5% branch rate (the null-`Random` guard was untested). Added `Constructor_NullRandom_Throws`, giving 100% line and branch coverage.
+- `dotnet format --verify-no-changes` → 0; Release build → 0 warnings; full suite 41/41 passed (40 unit + 1 integration).
+- Status: **done**.

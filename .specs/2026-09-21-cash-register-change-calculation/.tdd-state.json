@@ -105,7 +105,7 @@
     },
     "T-004": {
       "title": "Random change strategy",
-      "phase": "pending",
+      "phase": "done",
       "acs_covered": [
         "AC-004",
         "AC-005"
@@ -126,7 +126,9 @@
         "green",
         "refactor",
         "simplify"
-      ]
+      ],
+      "red_failure_excerpt": "3 failed against stub: AlwaysSumsExactlyToAmount: sum should be 1 but was 0 (seed 1); DifferentSeeds_ProduceDifferentDenominations: distinctResults should be greater than 1 but was 1; NegativeAmount_Throws: should throw ArgumentOutOfRangeException but did not",
+      "completed_at": "2026-09-21"
     },
     "T-005": {
       "title": "Rules, divisor settings, ChangeCalculator",
