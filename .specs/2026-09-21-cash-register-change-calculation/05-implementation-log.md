@@ -232,3 +232,24 @@
 - `dotnet format` fixed the line endings in the new `Program.cs` lines. `dotnet format --verify-no-changes` → 0; Release build → 0 warnings; full suite 145/145 passed.
 - Coverage (integration run): DivisorEndpoints, the DTOs and CashRegisterLog have 100% line and branch coverage. The two uncovered `Program` branches run only outside Development (JSON console logging, and the 500 fallback for non-request exceptions); the Development test host cannot reach them.
 - Status: **done**.
+
+### T-012 — red
+- **Test-only task:** it verifies properties the existing code should already have, so correct code passes immediately. To keep the rules from passing vacuously, each "must not depend" rule is paired with a **positive control** proving ArchUnitNET can see the forbidden kind of dependency.
+- `ArchitectureTests` (7 tests): Currencies must not depend on Change (+ control); the module does not reference `CashRegister.Api`; `IChangeRule` implementations are sealed and live in `Features.Change.Rules` (AC-024, DC-001); no `DateTime`/`DateTimeOffset` `.Now`/`.UtcNow` calls (TimeProvider only); only `*Endpoints` types in `Features` use `Microsoft.AspNetCore.Http` (+ control).
+- First run → 2 failures, both positive controls:
+  - `Endpoints_UseAspNetCoreHttp_PositiveControl`: only the module assembly was loaded, so no `Microsoft.AspNetCore.Http` types existed in the architecture. **The negative rule was vacuous.**
+  - `Change_DependsOnCurrencies_PositiveControl`: `DependOnAny` applies to *every* matched type; the control was mis-specified.
+
+### T-012 — green
+- Loaded the ASP.NET Core HTTP assemblies (`HttpContext`, `IFormFile`, `TypedResults`, `StatusCodes`) into the ArchUnitNET architecture, so the Http rule is now real (its control passes).
+- The Change → Currencies control now targets `Transaction` specifically.
+- `FileUploadPerformanceTests` (NFR-001): 5 warm-up + 50 measured uploads of a mixed 1000-line file (minimal, random and error lines) through the real endpoint; asserts p95 < 500 ms. It passed, with all 55 uploads taking about 0.7 s in total.
+- Unit 127/127; integration 26/26.
+
+### T-012 — refactor
+- A `TypesIn(namespace)` helper builds the anchored namespace regex once for all rules. Suite green.
+
+### T-012 — simplify
+- Replaced the second `[Trait("Category","Performance")]` with `[Trait("NFR","NFR-001")]`: xUnit v3 / MTP filtering did not match a second value for the same key (`--filter-trait Category=Performance` found 0 tests). `--filter-trait NFR=NFR-001` now selects exactly the performance test, and the test still runs under the `it` gate (`Category=Integration`, 26 tests).
+- `dotnet format --verify-no-changes` → 0; Release build → 0 warnings; full suite 153/153 passed.
+- Status: **done**.

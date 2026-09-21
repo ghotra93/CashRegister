@@ -373,7 +373,7 @@
     },
     "T-012": {
       "title": "Architecture rules + NFR-001 performance test",
-      "phase": "pending",
+      "phase": "done",
       "acs_covered": [
         "AC-001",
         "AC-024"
@@ -395,7 +395,9 @@
         "green",
         "refactor",
         "simplify"
-      ]
+      ],
+      "red_failure_excerpt": "Test-only task (no production code). Red evidence: positive controls failed on first run: Endpoints_UseAspNetCoreHttp_PositiveControl FailedArchRuleException (ASP.NET Core types not loaded, so the negative rule was vacuous); Change_DependsOnCurrencies_PositiveControl FailedArchRuleException (DependOnAny applies to every type; control mis-specified)",
+      "completed_at": "2026-09-21"
     },
     "T-013": {
       "title": "Web scaffold + typed API client",
