@@ -506,7 +506,7 @@
     },
     "T-016": {
       "title": "Run instructions + design notes in README",
-      "phase": "pending",
+      "phase": "done",
       "acs_covered": [],
       "files_in_scope": [
         "README.md",
@@ -523,7 +523,9 @@
         "green",
         "refactor",
         "simplify"
-      ]
+      ],
+      "red_failure_excerpt": "Docs task (no production code): no red step. Proof = full suite still green + live smoke test of the README commands.",
+      "completed_at": "2026-09-21"
     }
   }
 }

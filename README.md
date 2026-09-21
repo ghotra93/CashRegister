@@ -41,3 +41,106 @@ Here are a couple of thoughts about the domain that could influence your respons
 * What might happen if the client needs to change the random divisor?
 * What might happen if the client needs to add another special case (like the random twist)?
 * What might happen if sales closes a new client in France?
+
+---
+
+# Solution
+
+A .NET 10 Minimal API with a React + TypeScript front end. The cashier uploads a transaction file, sees it in a list, and downloads the change for every line. The special-case divisor can be changed from the UI.
+
+The requirements, design, decisions and build log live in [`.specs/2026-09-21-cash-register-change-calculation/`](.specs/2026-09-21-cash-register-change-calculation/). Start with `01-spec.md` and `03-design.md`.
+
+## Running it
+
+Prerequisites: .NET SDK 10.0.1xx or later, and Node 24.
+
+```bash
+# API on http://localhost:5080
+dotnet run --project src/CashRegister.Api
+
+# In a second terminal: UI on http://localhost:5173 (proxies /api to the API)
+cd web
+npm install
+npm run dev
+```
+
+Open http://localhost:5173 and upload [`samples/input.txt`](samples/input.txt), the README sample. The downloaded output looks like:
+
+```
+3 quarters,1 dime,3 pennies
+3 pennies
+<random denominations totalling 1.67>
+```
+
+The API can also be called directly:
+
+```bash
+curl -F "file=@samples/input.txt" http://localhost:5080/api/files         # 201 + file summary
+curl http://localhost:5080/api/files/<id>/output                            # the change, one line per input line
+curl -X PUT -H "Content-Type: application/json" -d '{"divisor":5}' http://localhost:5080/api/settings/divisor
+```
+
+## Tests
+
+```bash
+dotnet test --solution CashRegister.slnx                                # unit + integration (incl. p95 < 500 ms for 1000 lines)
+dotnet test --solution CashRegister.slnx --filter-trait "Category=Integration"   # integration only
+npm --prefix web test                                                   # UI and API client (Vitest + MSW)
+npm --prefix web run lint && npm --prefix web run typecheck
+```
+
+Every test that proves an acceptance criterion is tagged with its ID: `[Trait("AC", "AC-011")]` in C#, and `[AC-027] …` in the name of a TypeScript test.
+
+## Behaviour
+
+| Input line | Output line |
+|---|---|
+| `2.12,3.00` | `3 quarters,1 dime,3 pennies` (fewest pieces) |
+| `3.33,5.00` | random denominations that still total 1.67, because 333 cents is divisible by 3 |
+| `2.00,2.00` | `No change` |
+| `abc` | `Error: invalid line, expected '<owed>,<paid>'` |
+| `-1.00,2.00` | `Error: amounts must not be negative` |
+| `3.00,2.00` | `Error: amount paid is less than amount owed` |
+| `1.001,2.00` | `Error: amounts must have at most 2 decimal places` |
+
+- Blank lines are ignored, and every other line produces exactly one output line, in order.
+- An invalid line gets an error message and processing continues.
+- A file with more than 1000 non-blank lines is rejected with a `400` ProblemDetails.
+- All money is handled as whole cents (`long`), never floating point.
+- v1 keeps the divisor and uploaded files in memory (lost on restart) and has no authentication; both are planned for v2.
+
+## Code layout
+
+```
+src/CashRegister/                  the module: all business logic and its endpoints
+  Features/Currencies/             Currency, Denomination, UsdCurrency, CurrencyRegistry
+  Features/Change/                 Transaction, strategies, rules, parser, formatter, file processor
+    Files/  Settings/              the /api/files and /api/settings/divisor endpoints
+src/CashRegister.Api/              thin host: ProblemDetails, health, CORS, OpenAPI
+tests/CashRegister.Tests/          unit + ArchUnitNET architecture rules
+tests/CashRegister.IntegrationTests/  WebApplicationFactory tests + NFR-001 performance test
+web/                               Vite + React 19 + TypeScript UI
+```
+
+## Things to consider — answered
+
+**Changing the random divisor.** The divisor is a runtime setting (`IDivisorSettings`), edited from the UI or with `PUT /api/settings/divisor`. The rule reads the current value on every transaction, so a change applies to the next file with no redeploy. Any whole number ≥ 1 is accepted; a divisor of 1 makes every transaction random, and the UI warns about it. Persisting the setting is a v2 item: swap in a database-backed `IDivisorSettings`. See ADR-002.
+
+**Adding another special case.** Special cases are `IChangeRule` implementations: each has a `Priority`, a `Matches(transaction)` check, and the change strategy (`IChangeStrategy`) to use. `ChangeCalculator` applies the matching rule with the **lowest** priority value, and falls back to minimal change. A new twist means writing one sealed rule class (and a new strategy if it needs one) and registering it in `CashRegisterModule`; no existing code changes. An architecture test requires every rule to be sealed and to live in `Features/Change/Rules`. See ADR-003.
+
+**A new client in France.** Currencies are subclasses of `Currency`, each holding its code, decimal separator, decimal places and denominations, and they are looked up through `CurrencyRegistry`. Supporting euros means adding a `EurCurrency` class and one DI registration, then setting `CashRegister:Currency` to `EUR`; an unknown code stops the app at startup. The line parser already takes the decimal separator from the currency. Two points are left for v2 (see ADR-004):
+- **Separator clash:** a currency that uses `,` as its decimal separator conflicts with the `,` between the two amounts, so the field separator would also need to become a currency setting.
+- **Language and currency choice:** output is English-only in v1, and choosing a currency per file or per client needs its own spec.
+
+## Key decisions
+
+| ADR | Decision |
+|---|---|
+| 001 | One `CashRegister` module (slices as folders) + a thin API host |
+| 002 | In-memory divisor and file store for v1; no database |
+| 003 | Priority-ordered rules → strategies; integer cents; how random change is generated |
+| 004 | Currency registry; v1 processes files in USD |
+| 005 | No auth in v1; CORS limited to the UI origin; 1 MB uploads; sanitised file names |
+| 006 | Vite React SPA rather than Next.js |
+| 007 | Output format (`\n`-joined, `No change`) and exact error wording |
+| 008 | Structured logs + health check in v1; OpenTelemetry in v2 |

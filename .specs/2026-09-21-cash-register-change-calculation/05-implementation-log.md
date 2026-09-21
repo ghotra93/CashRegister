@@ -310,3 +310,22 @@
 - Renamed the `describe()` helper in `FileUpload.tsx` to `summaryText()`; the old name read like the test-framework global.
 - Gates: `npm test` 21/21; typecheck 0; lint 0 (`--max-warnings 0`); `vite build` → 225 kB JS (70.4 kB gzip), 1.7 kB CSS.
 - Status: **done**.
+
+### T-016 — red
+- Docs task with no production code, so there is no failing test to write. Its proof (T-016-T1) is that the full suite stays green, plus a live smoke test of the documented commands.
+
+### T-016 — green
+- `samples/input.txt`: the README sample input without blank lines.
+- `README.md`: appended a **Solution** section below the untouched problem text: how to run, curl examples, test commands, a behaviour table (including every line error message), code layout, answers to the three "Things to Consider" (pointing to ADR-002/003/004), and an ADR summary table. The diff shows one "deleted" line only because the original file had no trailing newline; its text is unchanged.
+
+### T-016 — refactor
+- Smoke-tested the README instructions against a real `dotnet run` of the API:
+  - `/health` → `Healthy`;
+  - `curl -F file=@samples/input.txt` → 201;
+  - output → `3 quarters,1 dime,3 pennies` / `3 pennies` / `1 quarter,8 dimes,8 nickels,22 pennies` (= 167¢ ✓);
+  - PUT divisor 5 → `{"divisor":5}`; PUT 0 → 400 ProblemDetails `Invalid divisor`.
+  - The API was stopped afterwards.
+
+### T-016 — simplify
+- `dotnet format --verify-no-changes` → 0; Release build → 0 warnings; .NET suite 153/153; web suite 21/21.
+- Status: **done**. All 16 tasks are done.
