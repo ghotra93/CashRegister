@@ -184,3 +184,28 @@
 - No further simplification. `dotnet format --verify-no-changes` → 0; Release build → 0 warnings; full suite 120/120 passed (unit 115 + integration 5).
 - Coverage: unit tests give 98.8% line / 100% branch for the module package. `CashRegisterModule` is at 82.6% in the unit run because `MapCashRegister` runs only in the integration host; the integration run shows it at 100%. Both projects write `artifacts/coverage/cov.xml`, so the last run overwrites the other. **Follow-up for /net-validate:** give each project its own output name or merge the reports.
 - Status: **done**.
+
+### T-010 — red
+- Unit: `InMemoryUploadedFileStoreTests`: add/get (AC-028), unknown id, newest first (AC-027), empty list, 200 concurrent adds.
+- Integration: `FileEndpointsTests`: README upload → 201 + Location + lineCount 3 (AC-001); list contains uploads newest first (AC-027); download → text/plain attachment `readme-change.txt` whose first two lines match the README (AC-028); 1001 lines → 400 `Too many lines` (AC-023); no file → 400 `Invalid file` (AC-015); unknown id → 404 `File not found` (AC-015); path characters stripped from the file name; name truncated to 100 characters.
+- Stage 1: compile failure. Stage 2: stubs.
+- Run → 12 failed / 122 passed. The unknown-id and empty-list store tests pass trivially against the stub.
+
+### T-010 — green
+- `UploadedFile` record; `IUploadedFileStore` / `InMemoryUploadedFileStore` (`ConcurrentDictionary`, newest first by `UploadedAt`); `UploadedFileSummary` DTO.
+- `FileEndpoints` (group `/api/files`):
+  - `POST /` takes an `IFormFile` field `file`, has a 1 MB multipart limit, and disables antiforgery (ADR-005: no auth or cookies in v1). No file → 400 `Invalid file`; over the line limit → 400 `Too many lines`; otherwise the file is stored with `TimeProvider.GetUtcNow()` and the endpoint returns 201 + Location.
+  - `GET /` lists files newest first.
+  - `GET /{id:guid}/output` returns a `text/plain; charset=utf-8` attachment `<name>-change.txt`, or 404 `File not found`.
+  - `SafeFileName` strips the path and invalid characters, falls back to `upload.txt`, and truncates to 100 characters.
+- Module: registers the store and `TimeProvider.System` (`TryAdd`, so tests can swap it); `MapCashRegister` maps the file endpoints.
+- Full suite 134/134 on the first green run.
+
+### T-010 — refactor
+- Every endpoint returns a typed `Results<…>` union, and the problem titles are stable strings. Suite green.
+
+### T-010 — simplify
+- Hoisted `Path.GetInvalidFileNameChars()` to a static field (it was allocated per character). Replaced the truncation ternary with an `if`.
+- Coverage (the two projects now write separate files, `unit.xml` / `it.xml`): the store has 100% line and branch coverage from unit tests; `FileEndpoints` was at 93.75% in the integration run (the fallback-name branch was untested). Added `Upload_NameWithNothingLeftAfterStrippingThePath_FallsBackToUploadTxt` (name `folder/`; `HttpClient` refuses whitespace-only names), giving 100% / 100%.
+- `dotnet format --verify-no-changes` → 0; Release build → 0 warnings; full suite 135/135 passed.
+- Status: **done**.

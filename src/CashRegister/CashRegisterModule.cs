@@ -1,4 +1,5 @@
 using CashRegister.Features.Change;
+using CashRegister.Features.Change.Files;
 using CashRegister.Features.Change.Processing;
 using CashRegister.Features.Change.Rules;
 using CashRegister.Features.Change.Strategies;
@@ -6,6 +7,7 @@ using CashRegister.Features.Currencies;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
 namespace CashRegister;
@@ -44,12 +46,19 @@ public static class CashRegisterModule
         services.AddSingleton<ChangeCalculator>();
         services.AddSingleton<ChangeFileProcessor>();
 
+        // Uploaded files (in memory for v1, ADR-002).
+        services.AddSingleton<IUploadedFileStore, InMemoryUploadedFileStore>();
+        services.TryAddSingleton(TimeProvider.System);
+
         return services;
     }
 
     public static IEndpointRouteBuilder MapCashRegister(this IEndpointRouteBuilder endpoints)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
+
+        endpoints.MapFileEndpoints();
+
         return endpoints;
     }
 }

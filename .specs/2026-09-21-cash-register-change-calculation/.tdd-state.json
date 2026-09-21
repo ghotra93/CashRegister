@@ -302,7 +302,7 @@
     },
     "T-010": {
       "title": "File upload / list / download endpoints",
-      "phase": "pending",
+      "phase": "done",
       "acs_covered": [
         "AC-001",
         "AC-015",
@@ -333,7 +333,9 @@
         "green",
         "refactor",
         "simplify"
-      ]
+      ],
+      "red_failure_excerpt": "12 failed against stubs, e.g. Upload_ReadmeSample_Returns201: StatusCode should be Created but was NotFound; TryGet_AddedFile_ReturnsIt: should be True but was False; Download_UnknownId: ContentType should be application/problem+json",
+      "completed_at": "2026-09-21"
     },
     "T-011": {
       "title": "Divisor settings endpoints",
