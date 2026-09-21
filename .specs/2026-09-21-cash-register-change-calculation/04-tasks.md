@@ -214,6 +214,7 @@ All 28 active ACs are covered. ✅
   - `src/CashRegister/Features/Change/Settings/DivisorEndpoints.cs`
   - `src/CashRegister/Features/Change/Processing/CashRegisterLog.cs` (adds the `DivisorChanged` event; moved here from T-008)
   - `src/CashRegister/CashRegisterModule.cs`
+  - `src/CashRegister.Api/Program.cs` (added during T-011: map `BadHttpRequestException` to its own 400 status instead of 500)
   - `tests/CashRegister.IntegrationTests/Features/Change/Settings/DivisorEndpointsTests.cs`
 - **Dependencies:** T-009 (serialize with T-010 on `CashRegisterModule.cs`: run T-010 first)
 - **Gates:** unit, it, coverage

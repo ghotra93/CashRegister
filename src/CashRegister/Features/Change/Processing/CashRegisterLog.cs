@@ -18,4 +18,11 @@ internal static partial class CashRegisterLog
         Level = LogLevel.Warning,
         Message = "Rejected {FileName}: {Reason}")]
     public static partial void FileRejected(this ILogger logger, string fileName, string reason);
+
+    [LoggerMessage(
+        EventId = 3,
+        EventName = "DivisorChanged",
+        Level = LogLevel.Information,
+        Message = "Special-case divisor changed from {OldDivisor} to {NewDivisor}")]
+    public static partial void DivisorChanged(this ILogger logger, int oldDivisor, int newDivisor);
 }

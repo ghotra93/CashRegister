@@ -10,6 +10,11 @@ if (!builder.Environment.IsDevelopment())
 }
 
 builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler(options =>
+    // Malformed request bodies surface as BadHttpRequestException (thrown in Development);
+    // report them with their own 400 status rather than as a 500.
+    options.StatusCodeSelector = exception =>
+        exception is BadHttpRequestException badRequest ? badRequest.StatusCode : StatusCodes.Status500InternalServerError);
 builder.Services.AddHealthChecks();
 builder.Services.AddOpenApi();
 

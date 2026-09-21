@@ -2,6 +2,7 @@ using CashRegister.Features.Change;
 using CashRegister.Features.Change.Files;
 using CashRegister.Features.Change.Processing;
 using CashRegister.Features.Change.Rules;
+using CashRegister.Features.Change.Settings;
 using CashRegister.Features.Change.Strategies;
 using CashRegister.Features.Currencies;
 using Microsoft.AspNetCore.Routing;
@@ -58,6 +59,7 @@ public static class CashRegisterModule
         ArgumentNullException.ThrowIfNull(endpoints);
 
         endpoints.MapFileEndpoints();
+        endpoints.MapDivisorEndpoints();
 
         return endpoints;
     }

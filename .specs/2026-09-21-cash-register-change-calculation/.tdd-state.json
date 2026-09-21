@@ -339,7 +339,7 @@
     },
     "T-011": {
       "title": "Divisor settings endpoints",
-      "phase": "pending",
+      "phase": "done",
       "acs_covered": [
         "AC-015",
         "AC-025",
@@ -350,7 +350,8 @@
         "src/CashRegister/Features/Change/Settings/DivisorEndpoints.cs",
         "src/CashRegister/Features/Change/Processing/CashRegisterLog.cs",
         "src/CashRegister/CashRegisterModule.cs",
-        "tests/CashRegister.IntegrationTests/Features/Change/Settings/DivisorEndpointsTests.cs"
+        "tests/CashRegister.IntegrationTests/Features/Change/Settings/DivisorEndpointsTests.cs",
+        "src/CashRegister.Api/Program.cs"
       ],
       "depends_on": [
         "T-009",
@@ -366,7 +367,9 @@
         "green",
         "refactor",
         "simplify"
-      ]
+      ],
+      "red_failure_excerpt": "10/10 new integration cases failed (endpoints not mapped): Get_Initially_ReturnsThree: 404 NotFound; Put_ValidDivisor: StatusCode should be OK but was NotFound; Put_DivisorBelowOne(0): problem Title should be \"Invalid divisor\"; LogsDivisorChanged: no DivisorChanged record",
+      "completed_at": "2026-09-21"
     },
     "T-012": {
       "title": "Architecture rules + NFR-001 performance test",

@@ -209,3 +209,26 @@
 - Coverage (the two projects now write separate files, `unit.xml` / `it.xml`): the store has 100% line and branch coverage from unit tests; `FileEndpoints` was at 93.75% in the integration run (the fallback-name branch was untested). Added `Upload_NameWithNothingLeftAfterStrippingThePath_FallsBackToUploadTxt` (name `folder/`; `HttpClient` refuses whitespace-only names), giving 100% / 100%.
 - `dotnet format --verify-no-changes` → 0; Release build → 0 warnings; full suite 135/135 passed.
 - Status: **done**.
+
+### T-011 — red
+- Integration: `DivisorEndpointsTests` (a fresh host per test, because the divisor is process-wide): GET → 3; PUT 5 → 200 and GET reflects it (AC-025); after PUT 5, `3.33,5.00` gives the exact minimal output `1 dollar,2 quarters,1 dime,1 nickel,2 pennies` (AC-025, deterministic); PUT 0 / -2 / `{}` → 400 `Invalid divisor` and the old value is kept (AC-026); PUT `"abc"` / `2.5` / `not json` → 400 ProblemDetails (AC-015); a `DivisorChanged` log with old/new values (via `AddFakeLogging`).
+- The integration csproj now references `Microsoft.Extensions.Diagnostics.Testing` (already centrally versioned for the unit tests, so no new package).
+- No stubs needed: the tests use HTTP only, so they compile and fail on assertions. Run → 10 failed / 15 passed.
+
+### T-011 — green
+- `DivisorResponse(int)`, `ChangeDivisorRequest(int?)`. The request value is nullable so `{}` is reported as invalid rather than read as 0.
+- `DivisorEndpoints` (group `/api/settings/divisor`): `GET` → current value; `PUT` → rejects missing or < 1 with 400 `Invalid divisor` (the old value is kept), otherwise `IDivisorSettings.Change` + a `DivisorChanged` log (old → new) and 200.
+- `CashRegisterLog.DivisorChanged` added (EventId 3), as re-planned in T-008. The module maps the divisor endpoints.
+- First run: 6 failures.
+  - (a) **Test bug**: the below-one cases read the response body twice (`ObjectDisposedException`). The helper now returns the parsed `ProblemDetails`.
+  - (b) **Real bug**: non-integer JSON returned **500**. In Development, Minimal APIs throw `BadHttpRequestException` and `UseExceptionHandler` mapped it to 500. Fix in `Program.cs`: `ExceptionHandlerOptions.StatusCodeSelector` returns the exception's own status for `BadHttpRequestException` and 500 otherwise.
+- **Plan change:** `src/CashRegister.Api/Program.cs` was added to T-011's `files_in_scope` in `04-tasks.md` and `.tdd-state.json` before the fix was made.
+- Full suite 145/145.
+
+### T-011 — refactor
+- No structural changes needed. The divisor rules reuse `InMemoryDivisorSettings.MinimumDivisor` for both the check and the message. Suite green.
+
+### T-011 — simplify
+- `dotnet format` fixed the line endings in the new `Program.cs` lines. `dotnet format --verify-no-changes` → 0; Release build → 0 warnings; full suite 145/145 passed.
+- Coverage (integration run): DivisorEndpoints, the DTOs and CashRegisterLog have 100% line and branch coverage. The two uncovered `Program` branches run only outside Development (JSON console logging, and the 500 fallback for non-request exceptions); the Development test host cannot reach them.
+- Status: **done**.
