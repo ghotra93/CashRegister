@@ -290,3 +290,23 @@
 - Named `everyAmountDivisor = 1` for the warning rule, and a small `messageOf(error)` for the two error paths.
 - Gates: `npm test` 12/12; typecheck 0; lint 0 (`--max-warnings 0`); `vite build` OK.
 - Status: **done**.
+
+### T-015 — red
+- Design: `FileUpload({ onUploaded })` reports a success; `UploadedFilesList({ refreshKey })` loads the list itself and reloads when the key changes; `App` bumps the key after each upload, so each component can be tested alone.
+- `FileUpload.test.tsx` (3): Upload is disabled until a file is chosen; success shows "Processed input.txt: 3 lines, 1 with errors" and calls `onUploaded` (AC-027); a 400 `Too many lines` is shown in an alert and `onUploaded` is not called (AC-023).
+- `UploadedFilesList.test.tsx` (6): loads on mount in server order, newest first (AC-027); each row has a `download` link to `/api/files/{id}/output` named "Download change for <file>" (AC-028); reloads on a `refreshKey` change (AC-027); empty state; load error alert; column headers.
+- Stubs → 9 failed / 12 passed.
+
+### T-015 — green
+- `FileUpload`: a labelled file input (`accept` .txt/.csv); Upload is disabled until a file is chosen or while uploading; on success shows a `role="status"` summary, clears the input and calls `onUploaded`; `ApiError.message` is shown in `role="alert"`.
+- `UploadedFilesList`: a cancel-safe load keyed on `refreshKey`; empty state; error alert; a table labelled "Uploaded files" (File, Uploaded as a `<time>` formatted with `Intl.DateTimeFormat`, Lines, Errors, Output) with a `download` link per row, labelled "Download change for <file>".
+- 21/21 on the first green run.
+
+### T-015 — refactor
+- `App.tsx` holds a `filesVersion` counter, bumped by `onUploaded` and passed to the list as `refreshKey`.
+- **Plan change:** `web/src/index.css` was added to T-015's `files_in_scope` (`04-tasks.md` + `.tdd-state.json`) before editing, for table and form styles. `.table-scroll` gives the table horizontal scroll on narrow screens so the page never scrolls sideways.
+
+### T-015 — simplify
+- Renamed the `describe()` helper in `FileUpload.tsx` to `summaryText()`; the old name read like the test-framework global.
+- Gates: `npm test` 21/21; typecheck 0; lint 0 (`--max-warnings 0`); `vite build` → 225 kB JS (70.4 kB gzip), 1.7 kB CSS.
+- Status: **done**.

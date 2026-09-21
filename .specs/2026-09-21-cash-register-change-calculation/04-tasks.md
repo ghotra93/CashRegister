@@ -273,6 +273,7 @@ All 28 active ACs are covered. ✅
   - `web/src/features/files/UploadedFilesList.tsx`
   - `web/src/features/files/UploadedFilesList.test.tsx`
   - `web/src/App.tsx`
+  - `web/src/index.css` (added during T-015: table styles and horizontal scroll on narrow screens)
 - **Dependencies:** T-013 (serialize with T-014 on `App.tsx`: run T-014 first)
 - **Gates:** web-lint, web-typecheck, web-unit, web-build
 - **Rollback:** delete the listed files and remove the components from `App.tsx`.

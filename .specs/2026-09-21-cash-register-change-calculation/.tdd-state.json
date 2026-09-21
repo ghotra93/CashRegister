@@ -471,7 +471,7 @@
     },
     "T-015": {
       "title": "Upload, uploaded-files list and download UI",
-      "phase": "pending",
+      "phase": "done",
       "acs_covered": [
         "AC-023",
         "AC-027",
@@ -482,7 +482,8 @@
         "web/src/features/files/FileUpload.test.tsx",
         "web/src/features/files/UploadedFilesList.tsx",
         "web/src/features/files/UploadedFilesList.test.tsx",
-        "web/src/App.tsx"
+        "web/src/App.tsx",
+        "web/src/index.css"
       ],
       "depends_on": [
         "T-013",
@@ -499,7 +500,9 @@
         "green",
         "refactor",
         "simplify"
-      ]
+      ],
+      "red_failure_excerpt": "9/9 new tests failed against stub <section/> components: Unable to find an accessible element with the role \"button\" and name \"Upload\"; Unable to find role=\"row\"; Unable to find role=\"link\" name \"Download change for tuesday.txt\"",
+      "completed_at": "2026-09-21"
     },
     "T-016": {
       "title": "Run instructions + design notes in README",
