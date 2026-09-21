@@ -401,7 +401,7 @@
     },
     "T-013": {
       "title": "Web scaffold + typed API client",
-      "phase": "pending",
+      "phase": "done",
       "acs_covered": [
         "AC-015"
       ],
@@ -436,7 +436,9 @@
         "green",
         "refactor",
         "simplify"
-      ]
+      ],
+      "red_failure_excerpt": "7/7 client tests failed against stub: ProblemDetails test: expected Error: not implemented to be an instance of ApiError; listFiles: expected [] to deeply equal [ {…} ]; non-ProblemDetails fallback: promise resolved \"[]\" instead of rejecting",
+      "completed_at": "2026-09-21"
     },
     "T-014": {
       "title": "Divisor settings UI",

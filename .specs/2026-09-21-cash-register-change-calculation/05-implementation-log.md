@@ -253,3 +253,23 @@
 - Replaced the second `[Trait("Category","Performance")]` with `[Trait("NFR","NFR-001")]`: xUnit v3 / MTP filtering did not match a second value for the same key (`--filter-trait Category=Performance` found 0 tests). `--filter-trait NFR=NFR-001` now selects exactly the performance test, and the test still runs under the `it` gate (`Category=Integration`, 26 tests).
 - `dotnet format --verify-no-changes` → 0; Release build → 0 warnings; full suite 153/153 passed.
 - Status: **done**.
+
+### T-013 — red
+- Scaffold: `web/` Vite 8 + React 19.3 + TypeScript **6.0** (pinned `~6.0.3`: typescript-eslint 8.70 peers `typescript <6.1`, so TS 7 is not yet usable), Vitest 5 (jsdom, globals), RTL 16, MSW 2, ESLint 10 flat config (`typescript-eslint` strictTypeChecked + react-hooks). Strict tsconfig (`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`). The Vite dev proxy sends `/api` and `/health` to `http://localhost:5080`.
+- `npm install`: 0 vulnerabilities. MSW's postinstall (browser worker setup) is held back by npm allow-scripts; it is not needed for Node tests.
+- Tests: `src/api/client.test.ts` (7): ProblemDetails → `ApiError` with title/detail (AC-015); a non-ProblemDetails error falls back to `Request failed (<status>)` (AC-015); `listFiles` is typed; `uploadFile` sends multipart field `file`; `outputUrl`; `getDivisor`; `setDivisor` PUTs JSON. AC ids are in the test names (`[AC-015]`), the TypeScript equivalent of `[Trait("AC", …)]`.
+- Stub `client.ts` → `npx vitest run` → 7 failed. Example: `expected Error: not implemented to be an instance of ApiError`.
+
+### T-013 — green
+- `client.ts`: `ApiError(status, title, detail)`; a private `request<T>()` that throws `ApiError` from a ProblemDetails body, falling back to `Request failed (<status>)` for non-JSON errors; `listFiles`, `uploadFile` (multipart field `file`), `outputUrl` (id URL-encoded), `getDivisor`, `setDivisor` (PUT JSON).
+- First run: 5/7. The two multipart tests failed with `Cannot read properties of undefined (reading '_buffer')`. A probe showed that Vitest's **jsdom** environment replaces `FormData` and `File` with jsdom's versions while `fetch` stays Node's (undici), which cannot serialize them. Restoring Node's globals would break `userEvent.upload` in T-015 (it needs the DOM's own `File`).
+- **Deviation:** switched the test environment to **happy-dom** (`^20.14.5`, dev only), which ships a consistent fetch/FormData/File stack that MSW's Node interceptors still catch. `environmentOptions.happyDOM.url = http://localhost:5173` makes relative `/api/...` URLs resolve. jsdom was uninstalled. 7/7.
+- Added `@types/node@24` (dev) for `tsconfig.node.json` (vite.config.ts), and `vite/client` types for the CSS import.
+
+### T-013 — refactor
+- Path constants `filesPath` / `divisorPath`; one `request<T>` helper for every call. Tests green.
+
+### T-013 — simplify
+- `toApiError` uses early returns instead of nested conditionals. `App.tsx` is a minimal shell (heading + subtitle); T-014 and T-015 add the components. `index.css` defines color tokens with a dark-mode variant.
+- Gates: `npm run typecheck` → 0 errors; `npm run lint` (`--max-warnings 0`) → clean; `npm test` → 7/7; `vite build` → 220 kB JS (68.7 kB gzip). `npm install` → 0 vulnerabilities.
+- Status: **done**.
