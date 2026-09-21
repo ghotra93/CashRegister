@@ -201,7 +201,7 @@
     },
     "T-007": {
       "title": "Transaction line parser",
-      "phase": "pending",
+      "phase": "done",
       "acs_covered": [
         "AC-017",
         "AC-018",
@@ -227,7 +227,9 @@
         "green",
         "refactor",
         "simplify"
-      ]
+      ],
+      "red_failure_excerpt": "24/24 new cases failed against stubs, e.g. Parse_ValidLine: result.Transaction should not be null but was; Parse_Malformed(\"abc\"): Error should be \"Error: invalid line, expected <owed>,<paid>\" but was null",
+      "completed_at": "2026-09-21"
     },
     "T-008": {
       "title": "Change file processor + logging",

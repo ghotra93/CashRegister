@@ -125,3 +125,21 @@
 - `dotnet format --verify-no-changes` → 0; Release build → 0 warnings; full suite 70/70 passed.
 - Coverage: ChangeFormatter has 100% line and branch coverage.
 - Status: **done**.
+
+### T-007 — red
+- Tests: `TransactionLineParserTests`, 24 cases: valid → cents; accepted shapes (whitespace, whole dollars, one decimal, zero); AC-017 malformed (11 shapes including thousands separators, `$`, `1.`, `.50`, overflow); AC-018 negative; AC-019 paid < owed; AC-020 too many decimals; check order (negative before decimals); AC-029 separator from the currency (an apostrophe currency parses `1'50`; USD rejects it).
+- Stage 1: compile failure. Stage 2: stubs.
+- Run → 24 failed / 69 passed.
+
+### T-007 — green
+- `LineErrors` (ADR-007 wording; the decimals message takes its digit count from the currency). `LineParseResult` (private constructor, `Success` / `Failure` factories). `TransactionLineParser.Parse(line, currency)`: split on `,`, then parse each field with `ParsedAmount.From` (trim, optional leading `-`, digits, optional currency decimal separator + digits). Checks run in order: format → negative → decimals → overflow (treated as invalid) → paid < owed.
+- Unit suite 93/93 passed.
+
+### T-007 — refactor
+- Moved the per-amount parsing into a private nested `ParsedAmount` record, so `Parse` reads as the ADR-007 check sequence. Suite green.
+
+### T-007 — simplify
+- `ParsedAmount.From`: replaced the repeated `parts.Length == 2` checks and the combined boolean with sequential guard clauses. `ToMinorUnits`: an `if` instead of the `TryParse` ternary.
+- Coverage showed `ParsedAmount` at 94% line / 93.75% branch, under the 95% target for new code. Added malformed cases `1.2.3,4.00` (two separators) and `1.a0,2.00` (non-digit fraction), giving 100% / 100%.
+- `dotnet format --verify-no-changes` → 0; Release build → 0 warnings; full suite 96/96 passed.
+- Status: **done**.
