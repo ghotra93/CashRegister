@@ -1,3 +1,4 @@
+using ArchUnitNET.Fluent.Slices;
 using ArchUnitNET.Fluent.Syntax.Elements.Types;
 using ArchUnitNET.Loader;
 using ArchUnitNET.xUnitV3;
@@ -46,6 +47,15 @@ public sealed class ArchitectureTests
         Types().That().HaveFullName(typeof(CashRegister.Features.Change.Money.Transaction).FullName!)
             .Should().DependOnAny(TypesIn(CurrenciesNamespace))
             .Check(Module);
+    }
+
+    [Fact]
+    [Trait("AC", "AC-024")]
+    public void FeatureSlices_AreFreeOfCycles()
+    {
+        // DC-001/DC-003: slices depend in one direction only (Change → Currencies), which keeps
+        // new rules and currencies additive.
+        SliceRuleDefinition.Slices().Matching("CashRegister.Features.(*)..").Should().BeFreeOfCycles().Check(Module);
     }
 
     [Fact]
