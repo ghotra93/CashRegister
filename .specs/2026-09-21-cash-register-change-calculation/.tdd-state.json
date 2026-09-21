@@ -132,7 +132,7 @@
     },
     "T-005": {
       "title": "Rules, divisor settings, ChangeCalculator",
-      "phase": "pending",
+      "phase": "done",
       "acs_covered": [
         "AC-003",
         "AC-004",
@@ -162,7 +162,9 @@
         "green",
         "refactor",
         "simplify"
-      ]
+      ],
+      "red_failure_excerpt": "16 failed against stubs, e.g. Current_Initially_IsThree: should be 3 but was 0; Matches_UsesTheActiveDivisor: should be True but was False; Calculate_SeveralRulesMatch_LowestPriorityValueWins: Single() on empty sequence; Constructor_RuleWithUnregisteredStrategy_Throws: should throw InvalidOperationException but did not",
+      "completed_at": "2026-09-21"
     },
     "T-006": {
       "title": "Change formatter",

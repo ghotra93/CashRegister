@@ -86,3 +86,23 @@
 - Coverage first showed an 87.5% branch rate (the null-`Random` guard was untested). Added `Constructor_NullRandom_Throws`, giving 100% line and branch coverage.
 - `dotnet format --verify-no-changes` → 0; Release build → 0 warnings; full suite 41/41 passed (40 unit + 1 integration).
 - Status: **done**.
+
+### T-005 — red
+- Tests: `InMemoryDivisorSettingsTests` (default 3; change; rejects < 1 and keeps the value, AC-025), `OwedDivisibleByRuleTests` (333/300 match and 212/197 don't with divisor 3, AC-004; divisor 5, AC-013; strategy is random), `ChangeCalculatorTests` (no match → minimal, AC-003; divisible → random, AC-004; lowest priority wins, and ties go to the first registered, AC-024; a divisor change applies to the next calculation, AC-025; an unregistered strategy or a missing minimal strategy throws).
+- Stage 1: compile failure. Stage 2: stubs.
+- CA1716 rejected `IDivisorSettings.Set` (a reserved keyword in VB), so it was renamed to `Change` in the interface, implementation and tests.
+- Run → 16 failed / 42 passed. The two "not divisible" cases pass trivially because the stub always returns false.
+
+### T-005 — green
+- `IChangeRule { Priority, StrategyType, Matches }`, `IDivisorSettings { Current, Change }`, `InMemoryDivisorSettings` (default 3, rejects < 1, `Volatile` reads/writes), internal `OwedDivisibleByRule` (owed % divisor == 0 → `RandomChangeStrategy`), internal `ChangeCalculator` (stable `OrderBy(Priority)`, first match wins, otherwise `MinimalChangeStrategy`; checks at construction that the minimal strategy and every rule's strategy are registered).
+- First green run: 57/58. `Calculate_DivisorChanged_AppliesToNextCalculation` had a test bug: minimal change for 100¢ is "1 dollar", whose count is also 1, so the count couldn't tell the strategies apart. The test now asserts the denomination (the marker) instead. 58/58.
+
+### T-005 — refactor
+- Named `OwedDivisibleByRule.DefaultPriority = 100`, and `InMemoryDivisorSettings.DefaultDivisor` / `MinimumDivisor`.
+- The calculator resolves strategies through a single `StrategyOfType` helper, used both by the startup check and the default. Suite green.
+
+### T-005 — simplify
+- Coverage gaps closed with tests: the `OwedDivisibleByRule` null guard (branch 50% → 100%), and `Priority` (unread because `OrderBy` skips the key for a single element; line 87.5% → 100%).
+- `dotnet format --verify-no-changes` → 0; Release build → 0 warnings; full suite 61/61 passed.
+- Coverage: ChangeCalculator, InMemoryDivisorSettings and OwedDivisibleByRule have 100% line and branch coverage.
+- Status: **done**.
