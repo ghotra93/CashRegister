@@ -40,7 +40,7 @@
     },
     "T-002": {
       "title": "Currencies slice",
-      "phase": "pending",
+      "phase": "done",
       "acs_covered": [
         "AC-009",
         "AC-010",
@@ -68,7 +68,9 @@
         "green",
         "refactor",
         "simplify"
-      ]
+      ],
+      "red_failure_excerpt": "21/21 new tests failed against stubs, e.g. Code_IsUsd: `_usd.Code` should be \"USD\" but was \"\"; NameFor_CountOfOne: NotImplementedException; Constructor_WithDuplicateValues_Throws: should throw ArgumentException but did not",
+      "completed_at": "2026-09-21"
     },
     "T-003": {
       "title": "Transaction + minimal change strategy",

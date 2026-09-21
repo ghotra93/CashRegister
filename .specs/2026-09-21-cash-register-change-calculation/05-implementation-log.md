@@ -27,3 +27,24 @@
 - `dotnet build CashRegister.slnx -c Release` → 0 warnings, 0 errors.
 - Unit (`--filter-not-trait Category=Integration`): 1/1 passed. Integration (`--filter-trait Category=Integration`): 1/1 passed.
 - Status: **done**.
+
+### T-002 — red
+- Tests: `DenominationTests` (AC-009, AC-010), `UsdCurrencyTests` (AC-007, AC-029), `CurrencyRegistryTests`. 21 test cases across T-002-T1..T6.
+- Stage 1: compile failure (CS0246, types missing), recorded so the hook would allow skeleton production files.
+- Stage 2: skeleton types (empty values / `NotImplementedException`) added. Run `dotnet test --project tests/CashRegister.Tests` → 21 failed, 1 passed (T-001 smoke). Examples:
+  - `_usd.Code should be "USD" but was ""`
+  - `Constructor_WithDuplicateValues_Throws: should throw ArgumentException but did not`
+
+### T-002 — green
+- Implemented `Denomination` (validation, `NameFor`), abstract `Currency` (validates non-empty, unique values, has a 1-unit denomination; stores denominations largest first), `UsdCurrency` (USD, `.`, 2 digits, dollar/quarter/dime/nickel/penny), `ICurrencyRegistry` / `CurrencyRegistry` (case-insensitive, duplicate code throws).
+- Run: unit suite 22/22 passed.
+
+### T-002 — refactor
+- No structural changes needed. The stub-then-implement cycle left no dead code. Suite green.
+
+### T-002 — simplify
+- Used named arguments in `UsdCurrency` for readability, and a `largestFirst` local name in `Currency`.
+- `.editorconfig`: added a PascalCase naming rule for private static readonly fields. The underscore rule had flagged `DenominationTests.Penny` (IDE1006).
+- `dotnet format --verify-no-changes` → exit 0; `dotnet build -c Release` → 0 warnings; full suite 23/23 passed (unit + integration).
+- Coverage (Cobertura, `artifacts/coverage/cov.xml`): the Currencies slice has 100% line and 100% branch coverage.
+- Status: **done**.
