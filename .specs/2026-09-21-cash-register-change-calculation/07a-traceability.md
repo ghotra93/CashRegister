@@ -1,6 +1,6 @@
 # Traceability: 2026-09-21-cash-register-change-calculation
 
-> Generated 2026-09-21 by a stand-in script (the harness script `.github/scripts/traceability-dotnet.sh` is not installed; see 06-test-plan.md Gap-005).
+> Generated 2026-09-21 by `.github/scripts/traceability-dotnet.sh`.
 > Sources: `[Trait("AC", "AC-NNN")]` on xUnit tests; `[AC-NNN]` prefixes on Vitest test names; `acs_covered` in `.tdd-state.json`.
 
 ## Summary

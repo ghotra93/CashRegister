@@ -28,6 +28,7 @@
 | T-014 | Divisor settings UI | AC-025, AC-026 | T-013 | web-lint, web-typecheck, web-unit |
 | T-015 | Upload, uploaded-files list and download UI | AC-023, AC-027, AC-028 | T-013 | web-lint, web-typecheck, web-unit, web-build |
 | T-016 | Run instructions + design notes in README | — (docs) | T-015 | unit |
+| T-017 | Unit-test the endpoint handlers (coverage gate, ADR-009) | AC-015, AC-023, AC-025, AC-026, AC-027, AC-028 | T-016 | unit, coverage |
 
 ## AC Coverage
 
@@ -288,6 +289,20 @@ All 28 active ACs are covered. ✅
 - **Gates:** unit
 - **Rollback:** revert `README.md`.
 - **Notes:** Append a "Solution" section covering how to run the API, web and tests, and answer the three "Things to Consider" by pointing to ADR-003 and ADR-004. Do not edit the original problem text.
+
+### T-017: Unit-test the endpoint handlers
+- **AC-IDs:** AC-015, AC-023, AC-025, AC-026, AC-027, AC-028
+- **Why:** the harness measures coverage on the unit run only (ADR-009). The endpoints are proved only by integration tests, so unit coverage is 73.2% line / 75.4% branch, under the 90% floor. This task adds unit tests for the handler logic; thresholds are not lowered.
+- **Test-IDs:** T-017-T1 (upload with no file → `Invalid file` problem, AC-015), T-017-T2 (1001 lines → `Too many lines` problem, AC-023), T-017-T3 (upload stores the file with `FakeTimeProvider` time and returns 201 + summary, AC-027), T-017-T4 (list maps newest-first summaries, AC-027), T-017-T5 (download returns a text/plain file named `<name>-change.txt`, AC-028), T-017-T6 (download unknown id → 404 problem, AC-015), T-017-T7 (file name sanitising: path stripped, fallback, 100-character cap), T-017-T8 (divisor GET returns the current value), T-017-T9 (divisor PUT valid → 200 + `DivisorChanged` log, AC-025), T-017-T10 (divisor PUT missing or < 1 → `Invalid divisor`, value unchanged, AC-026)
+- **Files in scope:**
+  - `src/CashRegister/Features/Change/Files/FileEndpoints.cs` (handlers `private` → `internal` so unit tests can call them; no behaviour change)
+  - `src/CashRegister/Features/Change/Settings/DivisorEndpoints.cs` (same)
+  - `tests/CashRegister.Tests/Features/Change/Files/FileEndpointsTests.cs`
+  - `tests/CashRegister.Tests/Features/Change/Settings/DivisorEndpointsTests.cs`
+- **Dependencies:** T-016
+- **Gates:** unit, coverage (the harness coverage gate must pass: ≥ 90% line and branch on the unit run)
+- **Rollback:** delete the two test files and restore `private` on the handlers.
+- **Notes:** Call the handlers directly with real `ChangeFileProcessor`/`InMemoryUploadedFileStore`/`InMemoryDivisorSettings` and a fake `IFormFile` (`FormFile` over a `MemoryStream`); assert on the `TypedResults` values. `Microsoft.Extensions.TimeProvider.Testing` (`FakeTimeProvider`) is a new test package and needs approval; otherwise use a small hand-written `TimeProvider` subclass in the test.
 
 ## Cross-cutting items (Phase 5)
 

@@ -1,0 +1,33 @@
+{
+  "stack": "dotnet",
+  "sdk": "10.0.100 (rollForward latestFeature)",
+  "solution": "CashRegister.slnx",
+  "modules": [
+    { "name": "CashRegister", "path": "src/CashRegister", "slices": ["Features/Currencies", "Features/Change"] }
+  ],
+  "host": "src/CashRegister.Api",
+  "test_projects": {
+    "unit": "tests/CashRegister.Tests",
+    "integration": "tests/CashRegister.IntegrationTests"
+  },
+  "web": { "path": "web", "stack": "Vite + React 19 + TypeScript", "tests": "Vitest + RTL + MSW" },
+  "harness": {
+    "entrypoint": ".github/scripts/harness-dotnet.sh --report",
+    "configured_layers": ["format", "compile", "unit", "it", "coverage", "contract", "security", "web"],
+    "opt_in_layers": { "mutation": "not configured (no stryker-config.json)" },
+    "reports": {
+      "summary": "artifacts/harness-summary.json",
+      "unit": "artifacts/test-results/unit/*.trx",
+      "it": "artifacts/test-results/it/*.trx",
+      "coverage": "artifacts/coverage/cobertura.xml",
+      "web_coverage": "artifacts/coverage/web/cobertura-coverage.xml",
+      "new_code_coverage": "artifacts/new-code-coverage.json",
+      "openapi": "artifacts/openapi/openapi.json",
+      "vulnerable": "artifacts/vulnerable.txt"
+    },
+    "thresholds": { "coverage_floor": 0.9, "new_code": 0.95, "mutation": 0.75 },
+    "deviations": ".specs/2026-09-21-cash-register-change-calculation/adr/ADR-009-build-harness-deviations.md"
+  },
+  "persistence": "none (in-memory, ADR-002)",
+  "testcontainers": "absent (no external dependencies)"
+}

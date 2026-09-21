@@ -3,7 +3,13 @@ obj/
 .vs/
 *.user
 TestResults/
-artifacts/
 node_modules/
 web/dist/
 coverage/
+
+# Harness output is never committed, except the generated OpenAPI document,
+# which the contract gate diffs against origin/main.
+artifacts/*
+!artifacts/openapi/
+artifacts/openapi/*
+!artifacts/openapi/openapi.json

@@ -526,6 +526,37 @@
       ],
       "red_failure_excerpt": "Docs task (no production code): no red step. Proof = full suite still green + live smoke test of the README commands.",
       "completed_at": "2026-09-21"
+    },
+    "T-017": {
+      "title": "Unit-test the endpoint handlers (coverage gate, ADR-009)",
+      "phase": "pending",
+      "acs_covered": [
+        "AC-015",
+        "AC-023",
+        "AC-025",
+        "AC-026",
+        "AC-027",
+        "AC-028"
+      ],
+      "files_in_scope": [
+        "src/CashRegister/Features/Change/Files/FileEndpoints.cs",
+        "src/CashRegister/Features/Change/Settings/DivisorEndpoints.cs",
+        "tests/CashRegister.Tests/Features/Change/Files/FileEndpointsTests.cs",
+        "tests/CashRegister.Tests/Features/Change/Settings/DivisorEndpointsTests.cs"
+      ],
+      "depends_on": [
+        "T-016"
+      ],
+      "gates": [
+        "unit",
+        "coverage"
+      ],
+      "estimated_phases": [
+        "red",
+        "green",
+        "refactor",
+        "simplify"
+      ]
     }
   }
 }
