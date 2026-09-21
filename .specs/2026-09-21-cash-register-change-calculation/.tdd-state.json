@@ -442,7 +442,7 @@
     },
     "T-014": {
       "title": "Divisor settings UI",
-      "phase": "pending",
+      "phase": "done",
       "acs_covered": [
         "AC-025",
         "AC-026"
@@ -465,7 +465,9 @@
         "green",
         "refactor",
         "simplify"
-      ]
+      ],
+      "red_failure_excerpt": "5/5 DivisorSettings tests failed against stub <section/>: Unable to find a label with the text of: Special-case divisor; Unable to find role=\"alert\"",
+      "completed_at": "2026-09-21"
     },
     "T-015": {
       "title": "Upload, uploaded-files list and download UI",

@@ -273,3 +273,20 @@
 - `toApiError` uses early returns instead of nested conditionals. `App.tsx` is a minimal shell (heading + subtitle); T-014 and T-015 add the components. `index.css` defines color tokens with a dark-mode variant.
 - Gates: `npm run typecheck` → 0 errors; `npm run lint` (`--max-warnings 0`) → clean; `npm test` → 7/7; `vite build` → 220 kB JS (68.7 kB gzip). `npm install` → 0 vulnerabilities.
 - Status: **done**.
+
+### T-014 — red
+- Tests: `DivisorSettings.test.tsx` (5): loads the current value into an input labelled "Special-case divisor"; saving 5 PUTs `{divisor:5}` and shows a status "Divisor saved: 5" (AC-025); a server 400 shows the ProblemDetails text in an alert (AC-026); value 1 shows the "every transaction will get random change" warning (spec review note); a failed load shows an alert.
+- Stub component (`<section />`) → 5 failed / 7 passed. Example: `Unable to find a label with the text of: Special-case divisor`.
+
+### T-014 — green
+- `DivisorSettings`: loads via `getDivisor` (cancel-safe effect); a labelled number input (`useId`); Save → `setDivisor(Number(value))` → a `role="status"` confirmation; `ApiError.message` shown in `role="alert"`; a warning when the value is 1.
+- First run 11/12: `[AC-026]` could not find the alert. The input's `min={1}` made the browser's built-in form validation block submitting 0, so the server's `Invalid divisor` ProblemDetails was never shown. **Fix:** removed `min` so the server is the single validator (as designed) and users see its message. 12/12.
+
+### T-014 — refactor
+- Lint (`@typescript-eslint/no-deprecated`): React 19.3 deprecates `FormEvent`, so switched to `SubmitEvent<HTMLFormElement>`.
+- `App.tsx` renders `<DivisorSettings />`.
+
+### T-014 — simplify
+- Named `everyAmountDivisor = 1` for the warning rule, and a small `messageOf(error)` for the two error paths.
+- Gates: `npm test` 12/12; typecheck 0; lint 0 (`--max-warnings 0`); `vite build` OK.
+- Status: **done**.
