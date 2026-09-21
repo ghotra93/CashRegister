@@ -299,6 +299,8 @@ All 28 active ACs are covered. ✅
   - `src/CashRegister/Features/Change/Settings/DivisorEndpoints.cs` (same)
   - `tests/CashRegister.Tests/Features/Change/Files/FileEndpointsTests.cs`
   - `tests/CashRegister.Tests/Features/Change/Settings/DivisorEndpointsTests.cs`
+  - `tests/CashRegister.Tests/HostCompositionTests.cs` (added during T-017, user decision: a host test in the unit gate covers `Program.cs`)
+  - `tests/CashRegister.Tests/CashRegister.Tests.csproj` (references the API host + `Microsoft.AspNetCore.Mvc.Testing`, already centrally versioned)
 - **Dependencies:** T-016
 - **Gates:** unit, coverage (the harness coverage gate must pass: ≥ 90% line and branch on the unit run)
 - **Rollback:** delete the two test files and restore `private` on the handlers.

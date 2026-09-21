@@ -23,10 +23,11 @@ internal static class DivisorEndpoints
         return endpoints;
     }
 
-    private static Ok<DivisorResponse> Get(IDivisorSettings settings) =>
+    // Handlers are internal (not private) so unit tests can call them directly (T-017, ADR-009).
+    internal static Ok<DivisorResponse> Get(IDivisorSettings settings) =>
         TypedResults.Ok(new DivisorResponse(settings.Current));
 
-    private static Results<Ok<DivisorResponse>, ProblemHttpResult> Change(
+    internal static Results<Ok<DivisorResponse>, ProblemHttpResult> Change(
         ChangeDivisorRequest request,
         IDivisorSettings settings,
         ILoggerFactory loggerFactory)

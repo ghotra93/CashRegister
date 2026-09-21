@@ -34,7 +34,8 @@ internal static class FileEndpoints
         return endpoints;
     }
 
-    private static async Task<Results<Created<UploadedFileSummary>, ProblemHttpResult>> UploadAsync(
+    // Handlers are internal (not private) so unit tests can call them directly (T-017, ADR-009).
+    internal static async Task<Results<Created<UploadedFileSummary>, ProblemHttpResult>> UploadAsync(
         IFormFile? file,
         ChangeFileProcessor processor,
         ActiveCurrency activeCurrency,
@@ -75,10 +76,10 @@ internal static class FileEndpoints
         return TypedResults.Created($"/api/files/{uploaded.Id}", UploadedFileSummary.From(uploaded));
     }
 
-    private static Ok<UploadedFileSummary[]> List(IUploadedFileStore store) =>
+    internal static Ok<UploadedFileSummary[]> List(IUploadedFileStore store) =>
         TypedResults.Ok(store.ListNewestFirst().Select(UploadedFileSummary.From).ToArray());
 
-    private static Results<FileContentHttpResult, ProblemHttpResult> Download(Guid id, IUploadedFileStore store)
+    internal static Results<FileContentHttpResult, ProblemHttpResult> Download(Guid id, IUploadedFileStore store)
     {
         if (!store.TryGet(id, out var file))
         {

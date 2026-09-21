@@ -329,3 +329,25 @@
 ### T-016 — simplify
 - `dotnet format --verify-no-changes` → 0; Release build → 0 warnings; .NET suite 153/153; web suite 21/21.
 - Status: **done**. All 16 tasks are done.
+
+### T-017 — red
+- Tests (unit, no host): `FileEndpointsTests` (upload without a file → `Invalid file`, AC-015; 1001 lines → `Too many lines` and nothing stored, AC-023; valid upload stored at a fixed `TimeProvider` time and returns 201 + Location, AC-027; name sanitising (4 cases) and the 100-character cap; list newest first, AC-027; download → `text/plain; charset=utf-8` named `<name>-change.txt`, AC-028; unknown id → 404 `File not found`, AC-015) and `DivisorEndpointsTests` (GET, AC-025; PUT valid updates and returns, AC-025; PUT logs `DivisorChanged` old → new; PUT null/0/-2 → `Invalid divisor`, value kept, nothing logged, AC-026).
+- The clock is a hand-written `FixedTimeProvider : TimeProvider`, because `FakeTimeProvider` was not approved as a package.
+- **Red is compile-stage only**: CS0117 (handlers are `private`). The task's only production change is visibility; the behaviour already exists and is proved by integration tests, so no assertion-stage red can be reached honestly.
+
+### T-017 — green
+- `FileEndpoints.UploadAsync/List/Download` and `DivisorEndpoints.Get/Change` changed from `private` to `internal`, with a comment pointing to T-017 / ADR-009. No behaviour change.
+- Added two route-table unit tests: build (never start) a `WebApplication`, call `MapCashRegister()`, and assert that `POST/GET /api/files/`, `GET /api/files/{id:guid}/output` and `GET/PUT /api/settings/divisor/` are registered. This covers the mapping code and pins the HTTP contract.
+- Unit 147/147; harness: format, compile, unit, it, contract, security, web all pass.
+- **Coverage gate still fails: line 93.0%, branch 89.86% (floor 90%).** Every file is at 100% except `src/CashRegister.Api/Program.cs` (the host's top-level startup code; 24 lines and 7 branch points uncovered). It appears in the unit run only because the integration project, which runs 0 unit tests, loads the API assembly. **Scope decision escalated to the user.**
+- **User decision (2026-09-21): "Add a unit-gate host test".** Scope widened first: `tests/CashRegister.Tests/HostCompositionTests.cs` and `CashRegister.Tests.csproj` were added to T-017's `files_in_scope` (`04-tasks.md` + `.tdd-state.json`). The unit project now references the API host and `Microsoft.AspNetCore.Mvc.Testing` (already centrally versioned, so no new package).
+- `HostCompositionTests.Host_ComposesTheSamePipelineInEachEnvironment` (Development / Production): health; bad JSON → 400 problem+json; unhandled exception → 500 without the message; CORS for the SPA origin (Development only); OpenAPI exposed in Development only. No `Integration` trait, so it runs in the unit gate as the user decided.
+- Harness: **overall PASS**; coverage line 100%, branch 99.28%; unit 150, it 30.
+
+### T-017 — refactor
+- `RouteTable.BuildApp/Routes` is a small nested helper in `FileEndpointsTests`, reused by `DivisorEndpointsTests` so the route-table code lives in one place. Suite green.
+
+### T-017 — simplify
+- Removed `Host_WithoutACorsSection_AllowsNoOrigins`. It claimed to test a missing CORS section, but the shipped `appsettings.json` still supplies one, so it never reached that path (`Program.cs:21` `?? []` stayed partial). The Production theory case already proves no origins are allowed by default. The remaining partial branch is the known Gap-003 (won't fix).
+- Final harness: format, compile, unit (149), it (30), coverage (line 1.0, branch 0.9928), contract, security and web all pass; mutation skipped; **overall pass**. Traceability: 28/28 ACs, 0 orphans. New-code coverage vs `origin/main` is 0/0 because T-017 is not committed yet; it is re-measured by `/net-validate` after the commit.
+- Status: **done**.

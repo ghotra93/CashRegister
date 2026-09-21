@@ -529,7 +529,7 @@
     },
     "T-017": {
       "title": "Unit-test the endpoint handlers (coverage gate, ADR-009)",
-      "phase": "pending",
+      "phase": "done",
       "acs_covered": [
         "AC-015",
         "AC-023",
@@ -542,7 +542,9 @@
         "src/CashRegister/Features/Change/Files/FileEndpoints.cs",
         "src/CashRegister/Features/Change/Settings/DivisorEndpoints.cs",
         "tests/CashRegister.Tests/Features/Change/Files/FileEndpointsTests.cs",
-        "tests/CashRegister.Tests/Features/Change/Settings/DivisorEndpointsTests.cs"
+        "tests/CashRegister.Tests/Features/Change/Settings/DivisorEndpointsTests.cs",
+        "tests/CashRegister.Tests/HostCompositionTests.cs",
+        "tests/CashRegister.Tests/CashRegister.Tests.csproj"
       ],
       "depends_on": [
         "T-016"
@@ -556,7 +558,9 @@
         "green",
         "refactor",
         "simplify"
-      ]
+      ],
+      "red_failure_excerpt": "[compile] CS0117 FileEndpoints does not contain UploadAsync/List/Download; DivisorEndpoints does not contain Change/Get (handlers are private). Only production change is visibility, so an assertion-stage red is not reachable.",
+      "completed_at": "2026-09-21"
     }
   }
 }

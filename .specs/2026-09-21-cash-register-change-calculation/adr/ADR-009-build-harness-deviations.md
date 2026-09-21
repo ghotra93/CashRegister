@@ -13,7 +13,7 @@ The harness was wired from the `dotnet-build-harness` skill. Four of its default
 
 | # | Harness default | This repo | Why |
 |---|---|---|---|
-| 1 | Coverage is measured on the **unit** run only | **Kept (canonical).** The endpoints are proved only by integration tests today, so unit-only coverage is 73.2% line / 75.4% branch and the gate fails. **T-017** adds endpoint unit tests to reach the 90% floor. Thresholds are not lowered. | User choice: "unit only, add unit tests". |
+| 1 | Coverage is measured on the **unit** run only | **Kept (canonical).** At wiring time, unit-only coverage was 73.2% line / 75.4% branch. **T-017** added handler unit tests and route-table tests, and, by a second user decision, a host test (`HostCompositionTests`, no `Integration` trait) so the host's startup code (`Program.cs`) is measured in the unit gate. Result: **100% line / 99.28% branch**. Thresholds were not lowered. | User choices: "unit only, add unit tests", then "add a unit-gate host test" (instead of excluding the host from unit coverage). |
 | 2 | `Meziantou.Analyzer` + `GenerateDocumentationFile` | **Waived.** The .NET analyzers stay at `latest-recommended` with warnings (and analyzer warnings) as errors. | User choice. A trial build showed about 36 findings (28 missing XML docs, 5 one-type-per-file, 3 ConfigureAwait, which the skill's own `.editorconfig` disables). |
 | 3 | Private fields `camelCase`, no underscore | **`_camelCase` private fields**; PascalCase types, members, constants and static readonly fields; `I`-prefixed interfaces; no Hungarian notation. Enforced as errors in `.editorconfig`. | User: "c# is PascalCase, private fields can use _camelCase no hungarian notation". Matches the existing code and the .NET runtime style. |
 | 4 | `dotnet test --no-build` after `dotnet build` | **No `--no-build`.** The script builds once, then `dotnet test -c Release` does an incremental no-op rebuild. | The repo guard (`settings.json` deny rule + `forbid-skip-flags.sh`) forbids `--no-build` as a stale-build risk; the user chose to keep the guard. |
@@ -29,7 +29,7 @@ The harness was wired from the `dotnet-build-harness` skill. Four of its default
 ## Consequences
 
 - Positive: one command (`./.github/scripts/harness-dotnet.sh --report`) produces every report `/net-validate` reads.
-- Negative: until T-017 is done, the `coverage` gate is red and the overall harness verdict is `fail`.
+- Negative: `HostCompositionTests` runs a real in-process host inside the unit gate, a deliberate exception to "unit = no host" that keeps the composition root in the unit coverage measurement. Its behaviour duplicates part of the integration suite.
 
 ## Links
 

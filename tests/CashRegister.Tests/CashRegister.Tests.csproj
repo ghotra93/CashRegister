@@ -5,10 +5,13 @@
   <ItemGroup>
     <PackageReference Include="NSubstitute" />
     <PackageReference Include="TngTech.ArchUnitNET.xUnitV3" />
+    <!-- HostCompositionTests: the host's startup code is covered in the unit gate (T-017, ADR-009). -->
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\CashRegister\CashRegister.csproj" />
+    <ProjectReference Include="..\..\src\CashRegister.Api\CashRegister.Api.csproj" />
   </ItemGroup>
 
 </Project>
