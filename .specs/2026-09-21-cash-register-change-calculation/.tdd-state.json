@@ -74,7 +74,7 @@
     },
     "T-003": {
       "title": "Transaction + minimal change strategy",
-      "phase": "pending",
+      "phase": "done",
       "acs_covered": [
         "AC-003",
         "AC-005"
@@ -99,7 +99,9 @@
         "green",
         "refactor",
         "simplify"
-      ]
+      ],
+      "red_failure_excerpt": "9 new tests failed against stubs, e.g. MakeChange_88Cents: lines should be [(quarter,3),(dime,1),(penny,3)] but was []; ChangeDue_IsPaidMinusOwed: should be 88 but was 0; Constructor_PaidLessThanOwed_Throws: should throw ArgumentException but did not",
+      "completed_at": "2026-09-21"
     },
     "T-004": {
       "title": "Random change strategy",

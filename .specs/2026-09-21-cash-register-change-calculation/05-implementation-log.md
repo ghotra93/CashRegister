@@ -48,3 +48,23 @@
 - `dotnet format --verify-no-changes` → exit 0; `dotnet build -c Release` → 0 warnings; full suite 23/23 passed (unit + integration).
 - Coverage (Cobertura, `artifacts/coverage/cov.xml`): the Currencies slice has 100% line and 100% branch coverage.
 - Status: **done**.
+
+### T-003 — red
+- Tests: `TransactionTests` (AC-005 + validation), `MinimalChangeStrategyTests` (AC-003: 88¢, 3¢, 167¢; AC-005: sums exactly for 0..1000¢; zero → empty; negative throws).
+- Stage 1: compile failure (types missing). Stage 2: skeletons. They had to read instance data because CA1822 fails the build as a warning-as-error.
+- Run → 9 failed / 24 passed. The 2 new edge cases pass trivially against the stubs: exact payment gives 0, and 0 gives an empty list. Example: `MakeChange_88Cents … should be [(quarter,3),(dime,1),(penny,3)] but was []`.
+
+### T-003 — green
+- `Transaction`: validates non-negative amounts and paid ≥ owed; `ChangeDue = Paid - Owed`.
+- `ChangeLine.Total = value × count`. `IChangeStrategy.MakeChange(amount, currency)`.
+- `MinimalChangeStrategy`: greedy, largest first; skips zero counts.
+- Unit suite 33/33 passed.
+
+### T-003 — refactor
+- The greedy loop subtracts `line.Total`, so the value × count arithmetic lives only in `ChangeLine`. Suite green.
+
+### T-003 — simplify
+- Early `continue` for zero counts instead of a nested `if`. Nothing else to simplify.
+- `dotnet format --verify-no-changes` → 0; Release build → 0 warnings; full suite 34/34 passed.
+- Coverage: Transaction, ChangeLine and MinimalChangeStrategy have 100% line and branch coverage.
+- Status: **done**.
