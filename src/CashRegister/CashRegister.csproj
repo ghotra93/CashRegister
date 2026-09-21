@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <!-- The module maps its own Minimal API endpoints (ADR-001). -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="CashRegister.Tests" />
+    <InternalsVisibleTo Include="CashRegister.IntegrationTests" />
+    <!-- Lets NSubstitute proxy internal interfaces. -->
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+  </ItemGroup>
+
+</Project>

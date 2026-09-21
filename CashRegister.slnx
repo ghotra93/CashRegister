@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/CashRegister.Api/CashRegister.Api.csproj" />
+    <Project Path="src/CashRegister/CashRegister.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/CashRegister.IntegrationTests/CashRegister.IntegrationTests.csproj" />
+    <Project Path="tests/CashRegister.Tests/CashRegister.Tests.csproj" />
+  </Folder>
+</Solution>

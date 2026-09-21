@@ -1,0 +1,68 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Edit",
+      "Write",
+      "Glob",
+      "Grep",
+      "Bash(mvn *)",
+      "Bash(dotnet *)",
+      "Bash(docker compose *)",
+      "Bash(docker ps)",
+      "Bash(./.github/scripts/*)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git status)",
+      "Bash(git rev-parse *)"
+    ],
+    "deny": [
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(rm -rf *)",
+      "Bash(mvn * -DskipTests*)",
+      "Bash(mvn * -Dpit.skip*)",
+      "Bash(mvn * --no-verify*)",
+      "Bash(git * --no-verify*)",
+      "Bash(dotnet test * --no-build*)",
+      "Bash(dotnet * -p:SkipTests*)",
+      "Bash(dotnet * -p:RunAnalyzers=false*)",
+      "Bash(dotnet * -p:TreatWarningsAsErrors=false*)",
+      "Bash(dotnet * -p:EnforceCodeStyleInBuild=false*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          { "type": "command", "command": ".claude/hooks/block-impl-without-failing-test.sh" },
+          { "type": "command", "command": ".claude/hooks/enforce-files-in-scope.sh" },
+          { "type": "command", "command": ".claude/hooks/block-progress-on-open-questions.sh" }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": ".claude/hooks/forbid-skip-flags.sh" }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          { "type": "command", "command": ".claude/hooks/auto-format-touched.sh" },
+          { "type": "command", "command": ".claude/hooks/log-tdd-state-transition.sh" }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          { "type": "command", "command": ".claude/hooks/route-natural-language-aliases.sh" }
+        ]
+      }
+    ]
+  }
+}

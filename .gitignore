@@ -1,0 +1,9 @@
+bin/
+obj/
+.vs/
+*.user
+TestResults/
+artifacts/
+node_modules/
+web/dist/
+coverage/
