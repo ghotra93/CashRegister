@@ -269,7 +269,7 @@
     },
     "T-009": {
       "title": "Module registration + API host",
-      "phase": "pending",
+      "phase": "done",
       "acs_covered": [
         "AC-015"
       ],
@@ -296,7 +296,9 @@
         "green",
         "refactor",
         "simplify"
-      ]
+      ],
+      "red_failure_excerpt": "9 failed against stubs, e.g. AddCashRegister_ResolvesTheFileProcessor: should not be null but was; Health_ReturnsHealthy: StatusCode should be OK but was NotFound; UnknownApiRoute: ContentType should be application/problem+json but was null; CorsPreflight_FromTheSpaOrigin: TryGetValues should be True but was False",
+      "completed_at": "2026-09-21"
     },
     "T-010": {
       "title": "File upload / list / download endpoints",

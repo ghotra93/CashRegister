@@ -164,3 +164,23 @@
 - Coverage: ChangeFileProcessor, ProcessedFile and CashRegisterLog have 100% line and branch coverage.
 - `dotnet format --verify-no-changes` → 0; Release build → 0 warnings; full suite 110/110 passed.
 - Status: **done**.
+
+### T-009 — red
+- Unit: `CashRegisterModuleTests`: resolves `ChangeFileProcessor`; both strategies registered; one `OwedDivisibleByRule`; singleton `IDivisorSettings`; `ActiveCurrency` defaults to USD and is case-insensitive; an unknown currency fails options validation.
+- Integration: `CashRegisterApiFactory` (Development environment) + `HostTests`: `/health` → 200 "Healthy" (NFR-003); unknown `/api` route → 404 `application/problem+json` (AC-015); CORS preflight from `http://localhost:5173` is allowed and from another origin is not.
+- Stage 1: compile failure. Stage 2: stub `AddCashRegister` / `MapCashRegister` / options.
+- Run → 9 failed / 111 passed. "Other origin not allowed" passes trivially while no CORS policy exists.
+- `ActiveCurrency` is placed in `CashRegisterOptions.cs` (already in scope) because it is resolved from those options.
+
+### T-009 — green
+- `CashRegisterOptions` (section `CashRegister`, `Currency` default `USD`), `ActiveCurrency` record, `CashRegisterModule.AddCashRegister` (USD `Currency`, `CurrencyRegistry`, options + `ValidateOnStart`, `ActiveCurrency`, both strategies with `Random.Shared`, singleton `InMemoryDivisorSettings`, `OwedDivisibleByRule`, `ChangeCalculator`, `ChangeFileProcessor`), and `MapCashRegister` (empty; endpoints arrive in T-010 / T-011).
+- `Program.cs`: ProblemDetails, exception handler, status-code pages, health checks at `/health`, OpenAPI (Development only), a named CORS policy from `Cors:AllowedOrigins` (Development: `http://localhost:5173`), and a JSON console logger outside Development.
+- First run 119/120: the static `Validate(...)` message could not name the bad code. Replaced it with an `IValidateOptions<CashRegisterOptions>` validator (`CashRegisterOptionsValidator`) whose message names the code and lists the registered currencies. 120/120.
+
+### T-009 — refactor
+- Commented why `ActiveCurrency`'s factory can rely on the registry lookup (reading options `.Value` runs the validator first). Suite green.
+
+### T-009 — simplify
+- No further simplification. `dotnet format --verify-no-changes` → 0; Release build → 0 warnings; full suite 120/120 passed (unit 115 + integration 5).
+- Coverage: unit tests give 98.8% line / 100% branch for the module package. `CashRegisterModule` is at 82.6% in the unit run because `MapCashRegister` runs only in the integration host; the integration run shows it at 100%. Both projects write `artifacts/coverage/cov.xml`, so the last run overwrites the other. **Follow-up for /net-validate:** give each project its own output name or merge the reports.
+- Status: **done**.
