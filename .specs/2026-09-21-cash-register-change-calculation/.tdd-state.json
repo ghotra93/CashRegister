@@ -168,7 +168,7 @@
     },
     "T-006": {
       "title": "Change formatter",
-      "phase": "pending",
+      "phase": "done",
       "acs_covered": [
         "AC-006",
         "AC-007",
@@ -195,7 +195,9 @@
         "green",
         "refactor",
         "simplify"
-      ]
+      ],
+      "red_failure_excerpt": "8 failed against stub, e.g. Format_MinimalChangeFor2_12Paid3_00_MatchesReadmeSample: should be \"3 quarters,1 dime,3 pennies\" but was \"\"; Format_NoLines_IsNoChange: should be \"No change\" but was \"\"",
+      "completed_at": "2026-09-21"
     },
     "T-007": {
       "title": "Transaction line parser",

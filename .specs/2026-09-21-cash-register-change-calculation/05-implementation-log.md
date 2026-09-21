@@ -106,3 +106,22 @@
 - `dotnet format --verify-no-changes` → 0; Release build → 0 warnings; full suite 61/61 passed.
 - Coverage: ChangeCalculator, InMemoryDivisorSettings and OwedDivisibleByRule have 100% line and branch coverage.
 - Status: **done**.
+
+### T-006 — red
+- Tests: `ChangeFormatterTests`, with one test per AC: AC-006 (comma-separated), AC-007 (largest first from unordered input), AC-008 (zero counts omitted), AC-009 / AC-010 (singular/plural), AC-011 / AC-012 (README samples through `MinimalChangeStrategy`), AC-016 (`No change` for no lines and for only-zero lines).
+- Stage 1: compile failure. Stage 2: a stub returning `""`.
+- Run → 8 failed / 61 passed. `Format_OnlyZeroCountLines_IsNoChange` passes trivially because the stub constant is also `""`. Example: `should be "3 quarters,1 dime,3 pennies" but was ""`.
+
+### T-006 — green
+- `ChangeFormatter.Format(lines)`: drops zero counts, sorts by value descending, renders `<count> <NameFor(count)>`, joins with `,`; returns `NoChange = "No change"` when nothing is left.
+- Unit suite 69/69 passed.
+
+### T-006 — refactor
+- Named the `EntrySeparator` constant. The formatter re-sorts defensively, so the output order does not depend on the strategy (AC-007). Suite green.
+
+### T-006 — simplify
+- A plain `if` for the `No change` branch instead of a ternary. Each LINQ step is annotated with its AC.
+- `.editorconfig`: added a PascalCase rule for private `const` fields. The underscore rule had flagged `EntrySeparator` (IDE1006).
+- `dotnet format --verify-no-changes` → 0; Release build → 0 warnings; full suite 70/70 passed.
+- Coverage: ChangeFormatter has 100% line and branch coverage.
+- Status: **done**.
