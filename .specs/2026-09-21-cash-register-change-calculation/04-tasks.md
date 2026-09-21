@@ -212,6 +212,7 @@ All 28 active ACs are covered. ✅
 - **Files in scope:**
   - `src/CashRegister/Features/Change/Settings/DivisorDtos.cs`
   - `src/CashRegister/Features/Change/Settings/DivisorEndpoints.cs`
+  - `src/CashRegister/Features/Change/Processing/CashRegisterLog.cs` (adds the `DivisorChanged` event; moved here from T-008)
   - `src/CashRegister/CashRegisterModule.cs`
   - `tests/CashRegister.IntegrationTests/Features/Change/Settings/DivisorEndpointsTests.cs`
 - **Dependencies:** T-009 (serialize with T-010 on `CashRegisterModule.cs`: run T-010 first)

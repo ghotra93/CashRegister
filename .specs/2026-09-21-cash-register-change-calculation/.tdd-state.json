@@ -233,7 +233,7 @@
     },
     "T-008": {
       "title": "Change file processor + logging",
-      "phase": "pending",
+      "phase": "done",
       "acs_covered": [
         "AC-001",
         "AC-002",
@@ -263,7 +263,9 @@
         "green",
         "refactor",
         "simplify"
-      ]
+      ],
+      "red_failure_excerpt": "12 failed against stubs, e.g. Process_ReadmeSample_ProducesOneOutputLinePerTransaction: OutputLines.Count should be 3 but was 0; Process_OneLineOverTheLimit_IsRejected: ExceededLineLimit should be True but was False; LogsFileProcessedWithCounts: no log record",
+      "completed_at": "2026-09-21"
     },
     "T-009": {
       "title": "Module registration + API host",
@@ -342,6 +344,7 @@
       "files_in_scope": [
         "src/CashRegister/Features/Change/Settings/DivisorDtos.cs",
         "src/CashRegister/Features/Change/Settings/DivisorEndpoints.cs",
+        "src/CashRegister/Features/Change/Processing/CashRegisterLog.cs",
         "src/CashRegister/CashRegisterModule.cs",
         "tests/CashRegister.IntegrationTests/Features/Change/Settings/DivisorEndpointsTests.cs"
       ],

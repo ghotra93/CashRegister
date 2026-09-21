@@ -143,3 +143,24 @@
 - Coverage showed `ParsedAmount` at 94% line / 93.75% branch, under the 95% target for new code. Added malformed cases `1.2.3,4.00` (two separators) and `1.a0,2.00` (non-digit fraction), giving 100% / 100%.
 - `dotnet format --verify-no-changes` → 0; Release build → 0 warnings; full suite 96/96 passed.
 - Status: **done**.
+
+### T-008 — red
+- Tests: `ChangeFileProcessorTests`, 13 cases: README sample → 3 lines (AC-001); blank/whitespace lines ignored (AC-022); order kept (AC-002); lines 1 and 2 equal the README output (AC-011, AC-012); an invalid middle line gets an error and processing continues (AC-021); `No change`; exactly 1000 lines OK and 1001 rejected (AC-023); empty file; LF join with no trailing newline (ADR-007); `FileProcessed` log with counts (NFR-002) and a `FileRejected` warning, checked with `FakeLogger`.
+- Stage 1: compile failure. Stage 2: stubs.
+- Run → 12 failed / 96 passed. The empty-file case passes trivially against the stub.
+
+### T-008 — green
+- `ProcessedFile` (private constructor; `Completed` / `TooManyLines` factories; `LineCount`, `OutputText` joined with LF). `CashRegisterLog` (LoggerMessage source-generated `FileProcessed` Information and `FileRejected` Warning). `ChangeFileProcessor.ProcessAsync(stream, fileName, currency, ct)`: reads line by line, skips blank lines, returns `TooManyLines` and stops reading at the 1001st non-blank line, otherwise parse → calculate → format, or writes the line error and continues. Logs `FileProcessed` with counts and elapsed ms.
+- Unit suite 108/108 passed.
+
+### T-008 — refactor
+- Replaced `parsed.Transaction is null` + `parsed.Error!` with a pattern match on `Transaction`. Suite green.
+
+### T-008 — simplify
+- Removed a dead `?? LineErrors.InvalidLine` fallback, since `LineParseResult` guarantees an error when there is no transaction; a comment states that guarantee.
+- Removed the unused `DivisorChanged` log event (YAGNI). **Plan change:** `CashRegisterLog.cs` was added to T-011's `files_in_scope` in `04-tasks.md` and `.tdd-state.json`, so T-011 can add the event when it is needed.
+- Added `Constructor_NullDependencies_Throw` to cover the guards.
+- **Design deviation:** `FileProcessed` logs the file name, not a file id. The id is assigned later by the file store (T-010), which can log it if needed.
+- Coverage: ChangeFileProcessor, ProcessedFile and CashRegisterLog have 100% line and branch coverage.
+- `dotnet format --verify-no-changes` → 0; Release build → 0 warnings; full suite 110/110 passed.
+- Status: **done**.
