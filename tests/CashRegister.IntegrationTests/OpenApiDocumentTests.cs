@@ -5,21 +5,25 @@ namespace CashRegister.IntegrationTests;
 
 /// <summary>
 /// Contract smoke test: the generated OpenAPI document (Development only) describes every
-/// public endpoint. A full snapshot comparison needs the Verify package (see 06-test-plan.md, Gap-004).
+/// public endpoint. A full-document snapshot was considered and dropped (06-test-plan.md, Gap-004).
 /// </summary>
 public sealed class OpenApiDocumentTests(CashRegisterApiFactory factory) : IClassFixture<CashRegisterApiFactory>
 {
-    [Fact]
-    [Trait("AC", "AC-027")]
-    [Trait("Category", "Integration")]
-    public async Task OpenApiDocument_DescribesEveryPublicEndpoint()
+    private async Task<string> GetDocument()
     {
         var response = await factory.CreateClient()
             .GetAsync(new Uri("/openapi/v1.json", UriKind.Relative), TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        return await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+    }
 
-        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
+    [Fact]
+    [Trait("AC", "AC-027")]
+    [Trait("Category", "Integration")]
+    public async Task OpenApiDocument_DescribesEveryPublicEndpoint()
+    {
+        using var document = JsonDocument.Parse(await GetDocument());
         var paths = document.RootElement.GetProperty("paths");
 
         OperationsOf(paths, "/api/files").ShouldBe(["get", "post"], ignoreOrder: true);

@@ -77,6 +77,40 @@ describe('DivisorSettings', () => {
     expect(screen.getByText(/every transaction will get random change/i)).toBeInTheDocument();
   });
 
+  it('[AC-026] shows a generic message when saving fails without a server response', async () => {
+    serveDivisor(3);
+    server.use(http.put(divisorUrl, () => HttpResponse.error()));
+    const user = userEvent.setup();
+    render(<DivisorSettings />);
+
+    await screen.findByLabelText('Special-case divisor');
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Something went wrong. Please try again.');
+  });
+
+  it('[AC-025] ignores a load that finishes after the panel was removed', async () => {
+    let finishLoad = () => {};
+    server.use(
+      http.get(
+        divisorUrl,
+        () =>
+          new Promise<Response>((resolve) => {
+            finishLoad = () => {
+              resolve(HttpResponse.json({ divisor: 9 }));
+            };
+          }),
+      ),
+    );
+    const { unmount } = render(<DivisorSettings />);
+
+    unmount();
+    finishLoad();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    expect(screen.queryByLabelText('Special-case divisor')).not.toBeInTheDocument();
+  });
+
   it('shows an error when the current divisor cannot be loaded', async () => {
     server.use(http.get(divisorUrl, () => new HttpResponse(null, { status: 503 })));
 

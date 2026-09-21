@@ -32,6 +32,18 @@ describe('api client', () => {
     await expect(listFiles()).rejects.toMatchObject({ status: 502, title: 'Request failed (502)' });
   });
 
+  it('[AC-015] uses the HTTP status as the title when a JSON error has no title', async () => {
+    server.use(http.get('/api/files', () => HttpResponse.json({ detail: 'no title here' }, { status: 400 })));
+
+    await expect(listFiles()).rejects.toMatchObject({ status: 400, title: 'Request failed (400)', detail: 'no title here' });
+  });
+
+  it('[AC-015] falls back to the HTTP status when the error has no content type', async () => {
+    server.use(http.get('/api/files', () => new HttpResponse(null, { status: 503 })));
+
+    await expect(listFiles()).rejects.toMatchObject({ status: 503, title: 'Request failed (503)' });
+  });
+
   it('lists uploaded files as typed summaries', async () => {
     server.use(http.get('/api/files', () => HttpResponse.json([summary])));
 

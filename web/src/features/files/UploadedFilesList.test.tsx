@@ -77,6 +77,41 @@ describe('UploadedFilesList', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Request failed (500)');
   });
 
+  it('[AC-027] shows the newest list even when an earlier, slower load finishes last', async () => {
+    let finishFirstLoad = () => {};
+    let loads = 0;
+    server.use(
+      http.get('/api/files', () => {
+        loads++;
+        if (loads === 1) {
+          return new Promise<Response>((resolve) => {
+            finishFirstLoad = () => {
+              resolve(HttpResponse.json([older]));
+            };
+          });
+        }
+        return HttpResponse.json([newer, older]);
+      }),
+    );
+    const { rerender } = render(<UploadedFilesList refreshKey={0} />);
+
+    rerender(<UploadedFilesList refreshKey={1} />);
+    expect(await screen.findByText('tuesday.txt')).toBeInTheDocument();
+
+    finishFirstLoad();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    expect(screen.getByText('tuesday.txt')).toBeInTheDocument();
+  });
+
+  it('shows a generic message when the list cannot be reached', async () => {
+    server.use(http.get('/api/files', () => HttpResponse.error()));
+
+    render(<UploadedFilesList refreshKey={0} />);
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('The file list could not be loaded.');
+  });
+
   it('labels the table columns', async () => {
     serveFiles([older]);
 

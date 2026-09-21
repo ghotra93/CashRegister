@@ -43,6 +43,35 @@ describe('FileUpload', () => {
     expect(onUploaded).toHaveBeenCalledWith(uploaded);
   });
 
+  it('[AC-027] does not send anything when the form is submitted without a file', async () => {
+    let requests = 0;
+    server.use(
+      http.post('/api/files', () => {
+        requests++;
+        return HttpResponse.json(uploaded, { status: 201 });
+      }),
+    );
+    const onUploaded = vi.fn();
+    render(<FileUpload onUploaded={onUploaded} />);
+
+    screen.getByRole('button', { name: 'Upload' }).closest('form')?.requestSubmit();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    expect(requests).toBe(0);
+    expect(onUploaded).not.toHaveBeenCalled();
+  });
+
+  it('[AC-027] shows a generic message when the upload fails without a server response', async () => {
+    server.use(http.post('/api/files', () => HttpResponse.error()));
+    const user = userEvent.setup();
+    render(<FileUpload onUploaded={vi.fn()} />);
+
+    await user.upload(screen.getByLabelText('Transaction file'), transactionFile());
+    await user.click(screen.getByRole('button', { name: 'Upload' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('The upload failed. Please try again.');
+  });
+
   it('[AC-023] shows the server error when the file has too many lines', async () => {
     server.use(
       http.post('/api/files', () =>
