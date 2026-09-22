@@ -320,6 +320,16 @@ All 28 active ACs are covered. ✅
 - **Gates:** unit, it, coverage (all existing host/integration tests must stay green, since behaviour is unchanged)
 - **Rollback:** restore `Program.cs` and delete `HostSetup.cs` and its tests.
 
+### X-001: Files produced outside `/net-build` tasks (registered for the `/net-ship` scope check)
+
+These files were created by workflow phases or user requests that are not TDD tasks. Each was reviewed in `08-code-review.md` (`9b945d3...HEAD`) and is covered by the harness run in `07-validation-report.md` revision 2.
+
+| Produced by | Date | Files |
+|---|---|---|
+| `/net-test` (cross-cutting suites, Gap-007) | 2026-09-21 | `tests/CashRegister.IntegrationTests/OpenApiDocumentTests.cs`, `tests/CashRegister.IntegrationTests/ProductionHostTests.cs`, `web/src/App.test.tsx` |
+| `dotnet-build-harness` wiring (ADR-009) | 2026-09-21 | `.github/scripts/harness-dotnet.sh`, `.github/scripts/check-new-code-coverage-dotnet.sh`, `.github/scripts/traceability-dotnet.sh`, `.github/scripts/lib/harness.mjs`, `.github/scripts/lib/cobertura.mjs`, `.github/scripts/lib/new-code-coverage.mjs`, `.github/scripts/lib/traceability.mjs`, `tests/Directory.Build.props`, `artifacts/openapi/openapi.json` (generated contract, committed on purpose) |
+| User request: run API + UI together with Docker | 2026-09-21 | `docker-compose.yml`, `.dockerignore`, `src/CashRegister.Api/Dockerfile`, `web/Dockerfile`, `web/.dockerignore`, `web/nginx.conf` |
+
 ## Cross-cutting items (Phase 5)
 
 - ArchUnitNET rules (T-012)
