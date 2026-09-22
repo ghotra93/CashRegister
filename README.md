@@ -46,9 +46,11 @@ Here are a couple of thoughts about the domain that could influence your respons
 
 # Solution
 
-A .NET 10 Minimal API with a React + TypeScript front end. The cashier uploads a transaction file, sees it in a list, and downloads the change for every line. The special-case divisor can be changed from the UI.
+A .NET 10 Minimal API with a React + TypeScript front end. The cashier uploads a flat file of `owed,paid` lines, sees it in a list, and downloads the change for every line (for example `3 quarters,1 dime,3 pennies`). Change uses the fewest coins, except when the amount owed in cents is divisible by the special-case divisor (3 by default, changeable from the UI): then the coins are random but still add up exactly.
 
 The requirements, design, decisions and build log live in [`.specs/2026-09-21-cash-register-change-calculation/`](.specs/2026-09-21-cash-register-change-calculation/). Start with `01-spec.md` and `03-design.md`.
+
+How AI was used to build it (full transcript, decision log, verification, tool mapping and self-critique) is documented in [`docs/ai-usage/`](docs/ai-usage/README.md).
 
 ## Running it
 
@@ -94,6 +96,18 @@ curl -X PUT -H "Content-Type: application/json" -d '{"divisor":5}' http://localh
 
 ## Tests
 
+- 159 unit and 30 integration tests (xUnit v3), plus 30 UI tests (Vitest + React Testing Library + MSW).
+- Unit coverage is 100% line and branch; the UI is 100% line and 90% branch. The floor for both is 90%.
+- Also covered: architecture rules (ArchUnitNET), the API contract (OpenAPI), and a performance test showing a 1000-line file processes well under 500 ms (p95).
+
+One command runs every check: format, build, unit and integration tests, coverage, API contract, dependency vulnerabilities, and UI lint, typecheck, tests and build. It writes `artifacts/harness-summary.json`.
+
+```bash
+./.github/scripts/harness-dotnet.sh
+```
+
+Or run the suites individually:
+
 ```bash
 dotnet test --solution CashRegister.slnx                                # unit + integration (incl. p95 < 500 ms for 1000 lines)
 dotnet test --solution CashRegister.slnx --filter-trait "Category=Integration"   # integration only
@@ -119,7 +133,14 @@ Every test that proves an acceptance criterion is tagged with its ID: `[Trait("A
 - An invalid line gets an error message and processing continues.
 - A file with more than 1000 non-blank lines is rejected with a `400` ProblemDetails.
 - All money is handled as whole cents (`long`), never floating point.
-- v1 keeps the divisor and uploaded files in memory (lost on restart) and has no authentication; both are planned for v2.
+- Special cases are pluggable rules: each has a priority and names the change method to use; the lowest priority number wins, and minimal change is the fallback. "Divisible by 3 → random" is one such rule.
+
+## Known limitations (v1)
+
+- No login or authorization; anyone who can reach the API can change the divisor (ADR-005).
+- The divisor and uploaded files are kept in memory: they reset on restart, and only one API instance is supported (ADR-002).
+- USD only, and output is English only (ADR-004).
+- An upload over 1 MB gets a generic "Bad Request" message rather than a clear "file too large".
 
 ## Code layout
 
@@ -128,7 +149,7 @@ src/CashRegister/                  the module: all business logic and its endpoi
   Features/Currencies/             Currency, Denomination, UsdCurrency, CurrencyRegistry
   Features/Change/                 Transaction, strategies, rules, parser, formatter, file processor
     Files/  Settings/              the /api/files and /api/settings/divisor endpoints
-src/CashRegister.Api/              thin host: ProblemDetails, health, CORS, OpenAPI
+src/CashRegister.Api/              thin host; HostSetup composes ProblemDetails, health, CORS, OpenAPI
 tests/CashRegister.Tests/          unit + ArchUnitNET architecture rules
 tests/CashRegister.IntegrationTests/  WebApplicationFactory tests + NFR-001 performance test
 web/                               Vite + React 19 + TypeScript UI
@@ -156,3 +177,4 @@ web/                               Vite + React 19 + TypeScript UI
 | 006 | Vite React SPA rather than Next.js |
 | 007 | Output format (`\n`-joined, `No change`) and exact error wording |
 | 008 | Structured logs + health check in v1; OpenTelemetry in v2 |
+| 009 | Quality-harness settings that differ from the toolkit defaults (unit-only coverage, `_camelCase` fields, no Meziantou) |
