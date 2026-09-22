@@ -351,3 +351,22 @@
 - Removed `Host_WithoutACorsSection_AllowsNoOrigins`. It claimed to test a missing CORS section, but the shipped `appsettings.json` still supplies one, so it never reached that path (`Program.cs:21` `?? []` stayed partial). The Production theory case already proves no origins are allowed by default. The remaining partial branch is the known Gap-003 (won't fix).
 - Final harness: format, compile, unit (149), it (30), coverage (line 1.0, branch 0.9928), contract, security and web all pass; mutation skipped; **overall pass**. Traceability: 28/28 ACs, 0 orphans. New-code coverage vs `origin/main` is 0/0 because T-017 is not committed yet; it is re-measured by `/net-validate` after the commit.
 - Status: **done**.
+
+### T-018 — red
+- Source: code review `08-code-review.md` **F-001 (major)**: logic in `Program.cs`. The user chose "Fix it" (F-001 only; minors not included).
+- Tests: `HostSetupTests` (10 cases, unit gate, no running server): `StatusCodeFor` keeps a `BadHttpRequestException`'s status (400, 413) and maps anything else to 500; `AllowedOrigins` reads the configured list and returns empty for a missing section (the branch the earlier Gap-003 could not reach); `AddCashRegisterHost` uses the JSON console formatter only outside Development; `UseCashRegisterHost` maps OpenAPI only in Development, plus `/health` and the module routes (checked through the route table of a built, never-started app).
+- Scope: `src/CashRegister.Api/CashRegister.Api.csproj` added to T-018 (`04-tasks.md` + `.tdd-state.json`) before adding `InternalsVisibleTo` for `CashRegister.Tests`.
+- Stage 1: compile (CS0234, then CS0117 until `InternalsVisibleTo`). Stage 2: stub → **8 failed / 151 passed**. Development's simple formatter and Production's missing OpenAPI pass trivially against the do-nothing stub.
+
+### T-018 — green
+- New `src/CashRegister.Api/HostSetup.cs`: `AddCashRegisterHost(WebApplicationBuilder)` (JSON console logging outside Development, ProblemDetails, exception-handler status selector, health, OpenAPI, CORS policy `Spa` from `AllowedOrigins`, `AddCashRegister`), `UseCashRegisterHost(WebApplication)` (exception handler, status-code pages, CORS, OpenAPI in Development only, `/health`, `MapCashRegister`), and the internal functions `StatusCodeFor(Exception)` and `AllowedOrigins(IConfiguration)`.
+- `Program.cs` reduced to `CreateBuilder` → `AddCashRegisterHost()` → `Build` → `UseCashRegisterHost()` → `RunAsync`; no branches, ternaries or fallbacks.
+- Full suite 189/189 (unit 159, integration 30). All pre-existing host tests (`HostCompositionTests`, `HostTests`, `ProductionHostTests`, `DivisorEndpointsTests` integration) pass unchanged, so behaviour is preserved.
+
+### T-018 — refactor
+- The ternary status selector became an `if` + early return in `StatusCodeFor`. Route paths and config keys are named constants (`HealthPath`, `AllowedOriginsKey`, `SpaCorsPolicy`). Suite green.
+
+### T-018 — simplify
+- Nothing further. Harness: format, compile, unit (159), it (30), **coverage line 100% / branch 100%**, contract, security and web all pass; mutation skipped; **overall pass**.
+- Doc updates: `06-test-plan.md` Gap-003 marked closed; `08-code-review.md` records F-001 as resolved, with the post-resolution verdict **Approve**.
+- Status: **done**.

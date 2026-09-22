@@ -561,6 +561,35 @@
       ],
       "red_failure_excerpt": "[compile] CS0117 FileEndpoints does not contain UploadAsync/List/Download; DivisorEndpoints does not contain Change/Get (handlers are private). Only production change is visibility, so an assertion-stage red is not reachable.",
       "completed_at": "2026-09-21"
+    },
+    "T-018": {
+      "title": "Extract host composition from Program.cs (review F-001)",
+      "phase": "done",
+      "acs_covered": [
+        "AC-015"
+      ],
+      "files_in_scope": [
+        "src/CashRegister.Api/HostSetup.cs",
+        "src/CashRegister.Api/Program.cs",
+        "tests/CashRegister.Tests/HostSetupTests.cs",
+        "src/CashRegister.Api/CashRegister.Api.csproj"
+      ],
+      "depends_on": [
+        "T-017"
+      ],
+      "gates": [
+        "unit",
+        "it",
+        "coverage"
+      ],
+      "estimated_phases": [
+        "red",
+        "green",
+        "refactor",
+        "simplify"
+      ],
+      "red_failure_excerpt": "8 failed against stub HostSetup: StatusCodeFor(400) should be 400 but was 0; AllowedOrigins(missing) should be empty but was [\"stub\"]; Production FormatterName should be json; routes should contain /health",
+      "completed_at": "2026-09-21"
     }
   }
 }

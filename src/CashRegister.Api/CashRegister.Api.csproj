@@ -8,4 +8,9 @@
     <ProjectReference Include="..\CashRegister\CashRegister.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- HostSetupTests call the composition helpers directly (T-018). -->
+    <InternalsVisibleTo Include="CashRegister.Tests" />
+  </ItemGroup>
+
 </Project>

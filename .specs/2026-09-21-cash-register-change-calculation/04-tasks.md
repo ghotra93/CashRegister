@@ -29,6 +29,7 @@
 | T-015 | Upload, uploaded-files list and download UI | AC-023, AC-027, AC-028 | T-013 | web-lint, web-typecheck, web-unit, web-build |
 | T-016 | Run instructions + design notes in README | — (docs) | T-015 | unit |
 | T-017 | Unit-test the endpoint handlers (coverage gate, ADR-009) | AC-015, AC-023, AC-025, AC-026, AC-027, AC-028 | T-016 | unit, coverage |
+| T-018 | Extract host composition from Program.cs (review F-001) | AC-015 | T-017 | unit, it, coverage |
 
 ## AC Coverage
 
@@ -305,6 +306,19 @@ All 28 active ACs are covered. ✅
 - **Gates:** unit, coverage (the harness coverage gate must pass: ≥ 90% line and branch on the unit run)
 - **Rollback:** delete the two test files and restore `private` on the handlers.
 - **Notes:** Call the handlers directly with real `ChangeFileProcessor`/`InMemoryUploadedFileStore`/`InMemoryDivisorSettings` and a fake `IFormFile` (`FormFile` over a `MemoryStream`); assert on the `TypedResults` values. `Microsoft.Extensions.TimeProvider.Testing` (`FakeTimeProvider`) is a new test package and needs approval; otherwise use a small hand-written `TimeProvider` subclass in the test.
+
+### T-018: Extract host composition from Program.cs
+- **AC-IDs:** AC-015
+- **Why:** code review `08-code-review.md` F-001 (major): `Program.cs` holds branching and expression logic (the Development/Production switches, the status-code selector, the CORS origins fallback) that can only be tested by booting the host.
+- **Test-IDs:** T-018-T1 (the status-code selector keeps a `BadHttpRequestException`'s own status: 400, 413), T-018-T2 (other exceptions → 500), T-018-T3 (CORS origins read from config; a missing section → none), T-018-T4 (JSON console logging outside Development only), T-018-T5 (OpenAPI mapped in Development only)
+- **Files in scope:**
+  - `src/CashRegister.Api/HostSetup.cs` (new: `AddCashRegisterHost` / `UseCashRegisterHost` extensions plus two small testable helpers)
+  - `src/CashRegister.Api/Program.cs` (reduced to build → use → map → run; no branches)
+  - `tests/CashRegister.Tests/HostSetupTests.cs`
+  - `src/CashRegister.Api/CashRegister.Api.csproj` (added during T-018: `InternalsVisibleTo` for `CashRegister.Tests`)
+- **Dependencies:** T-017
+- **Gates:** unit, it, coverage (all existing host/integration tests must stay green, since behaviour is unchanged)
+- **Rollback:** restore `Program.cs` and delete `HostSetup.cs` and its tests.
 
 ## Cross-cutting items (Phase 5)
 

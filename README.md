@@ -52,6 +52,18 @@ The requirements, design, decisions and build log live in [`.specs/2026-09-21-ca
 
 ## Running it
 
+### With Docker (both projects together)
+
+```bash
+docker compose up --build
+```
+
+- UI: http://localhost:8080. nginx serves the React app and forwards `/api` and `/health` to the API, so the browser uses a single origin and no CORS setup is needed.
+- API: http://localhost:5080 (direct access, e.g. for `curl`). It runs in Production mode as a non-root user, so the OpenAPI document is not exposed.
+- Stop with `docker compose down`. Uploaded files and the divisor live in memory and reset when the API container restarts (ADR-002).
+
+### Locally
+
 Prerequisites: .NET SDK 10.0.1xx or later, and Node 24.
 
 ```bash
